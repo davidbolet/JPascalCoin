@@ -36,19 +36,18 @@ public class PascalCoinClientTest {
 	@Before
 	public void init()
 	{
-		String base="10.211.55.7";
+		String base="<127.0.0.1 or your ip>";
 		client = new PascalCoinClientImpl(base,PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT);
-		b58PubKey2 ="3GhhbouPE7mf5rVxu7rm8f2dEczavgmeZXoxU5Z1QtraVQwurYBgmRS2Q5F49VyVn5yDpQV87a6VTTFiKAF6bDbmeDb2MDxLxUT616";
-
-		b58PubKey="3GhhbouPE7mf5rVxu7rm8f2dEczavgmeZXoxU5Z1QtraVQwurYBgmRS2Q5F49VyVn5yDpQV87a6VTTFiKAF6bDbmeDb2MDxLxUT616";
-		encPubKey="CA022000EA06D675E651CDACB5884DE50DC18792CBD290F85C37CCAB178BBEDFDAA1AD6220006B5D594092BB4E67F5F66A36A0E1B0099F4F5AC8D3828417B3572A1559FB36C1";
-		b58PubKeyOtherWallet="3GhhbouvY2DXLpHF4WxvW37N6QwQa2Jkt9PUZSuxSY5GYPMNBgoErw8hZW2TenCK8SkLvVFN8ih2fZcHbLdX4U7TookiEoaViigqWR";
-		b58BuyKey="3GhhbopiJkQFZYUJ2vAYMmBJj2hWybSLJjkHEvqPjpdaDKGG8S5CvCzvYVbs9azzvSEtFDpvvZxftvB5dgGnDunvA64oq9HqfskigY";
-		accountId = 381309;
-		account2Id = 381404;
-		account3Id = 381403;
-		account4Id = 429090;
-		password = "L1L0kio10!";
+		b58PubKey2 ="<b58PubKey>";
+		b58PubKey="<b58PubKey>";
+		encPubKey="<decoded key>";
+		b58PubKeyOtherWallet="<b58PubKey>";
+		b58BuyKey="<b58PubKey>";
+		accountId = 0; //<First account number>;
+		account2Id = 1; //<Second account number>;
+		account3Id = 2; //<Third account number>;
+		account4Id = 3; //<Fourth account number>;
+		password = "<your wallet password>";
 		//Initially unlock wallet,
 		client.unlock(password);
 	}
