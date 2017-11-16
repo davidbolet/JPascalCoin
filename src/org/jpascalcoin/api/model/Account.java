@@ -128,7 +128,7 @@ public class Account implements Serializable {
 	}
 
 	/**
-	 * For Listed accounts for PrivateSale, this indicates the buyers public key
+	 * Only for listed accounts for PrivateSale. This indicates the buyers public key
 	 * @return String
 	 */
 	public String getNewEncPubkey() {
@@ -140,7 +140,8 @@ public class Account implements Serializable {
 	}
 
 	/**
-	 * 
+	 * Only if the account is listed
+	 * Account locked until this blocknumber is reached 
 	 * @return Integer
 	 */
 	public Integer getLockedUntilBlock() {
