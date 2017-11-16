@@ -31,4 +31,9 @@ Operation op = client.sendTo(accountSender, accountTarget, amount, fee, payload.
 ```
 
 # Credits
+Donations apreciated :)
+
+PascalCoin -> Account 381309-50 (you can test sendTo function, if you want :)))
+BitCoin -> 18zU5odGJqefdwzNmnj9teSJRZS5auEPRg
+
 David Bolet <davidbolet@gmail.com>
