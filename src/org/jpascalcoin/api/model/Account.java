@@ -56,6 +56,14 @@ public class Account implements Serializable {
     @SerializedName("updated_b")
     @Expose
     private Integer updatedB;
+    
+	@SerializedName("seller_account")
+    @Expose
+    private Integer sellerAccount;
+	
+	@SerializedName("price")
+    @Expose
+    private Double price;
 
     /**
      * Account number
@@ -97,7 +105,7 @@ public class Account implements Serializable {
 
 	/**
 	 * Account State
-	 * @return AccountState
+	 * @return AccountState (Normal or listed)
 	 */
 	public AccountState getState() {
 		return state;
@@ -190,6 +198,30 @@ public class Account implements Serializable {
 
 	public void setUpdatedB(Integer updatedB) {
 		this.updatedB = updatedB;
+	}
+
+	/**
+	 * Account Seller if account is listed
+	 * @return Integer
+	 */
+	public Integer getSellerAccount() {
+		return sellerAccount;
+	}
+
+	public void setSellerAccount(Integer sellerAccount) {
+		this.sellerAccount = sellerAccount;
+	}
+
+	/**
+	 * Account price if account is listed
+	 * @return Double
+	 */
+	public Double getPrice() {
+		return price;
+	}
+
+	public void setPrice(Double price) {
+		this.price = price;
 	}
     
 
