@@ -5,23 +5,24 @@ import static org.junit.Assert.*;
 import java.util.Base64;
 import java.util.List;
 
-import org.jpascalcoin.api.client.PascalCoinClient;
-import org.jpascalcoin.api.client.PascalCoinClientImpl;
-import org.jpascalcoin.api.constants.PascalCoinConstants;
-import org.jpascalcoin.api.model.Account;
-import org.jpascalcoin.api.model.Block;
-import org.jpascalcoin.api.model.Connection;
-import org.jpascalcoin.api.model.DecryptedPayload;
-import org.jpascalcoin.api.model.KeyType;
-import org.jpascalcoin.api.model.NodeServer;
-import org.jpascalcoin.api.model.NodeStatus;
-import org.jpascalcoin.api.model.Operation;
-import org.jpascalcoin.api.model.PayLoadEncryptionMethod;
-import org.jpascalcoin.api.model.PublicKey;
-import org.jpascalcoin.api.model.RawOperation;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClient;
+import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClientImpl;
+import com.github.davidbolet.jpascalcoin.api.constants.PascalCoinConstants;
+import com.github.davidbolet.jpascalcoin.api.model.Account;
+import com.github.davidbolet.jpascalcoin.api.model.Block;
+import com.github.davidbolet.jpascalcoin.api.model.Connection;
+import com.github.davidbolet.jpascalcoin.api.model.DecryptedPayload;
+import com.github.davidbolet.jpascalcoin.api.model.KeyType;
+import com.github.davidbolet.jpascalcoin.api.model.NodeServer;
+import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
+import com.github.davidbolet.jpascalcoin.api.model.Operation;
+import com.github.davidbolet.jpascalcoin.api.model.PayLoadEncryptionMethod;
+import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
+import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
 
 public class PascalCoinClientTest {
 	PascalCoinClient client;
@@ -36,18 +37,20 @@ public class PascalCoinClientTest {
 	@Before
 	public void init()
 	{
-		String base="<127.0.0.1 or your ip>";
+		String base="localhost";
 		client = new PascalCoinClientImpl(base,PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT);
-		b58PubKey2 ="<b58PubKey>";
-		b58PubKey="<b58PubKey>";
-		encPubKey="<decoded key>";
-		b58PubKeyOtherWallet="<b58PubKey>";
-		b58BuyKey="<b58PubKey>";
-		accountId = 0; //<First account number>;
-		account2Id = 1; //<Second account number>;
-		account3Id = 2; //<Third account number>;
-		account4Id = 3; //<Fourth account number>;
-		password = "<your wallet password>";
+		b58PubKey="<Your public key (as wallet exports)>";
+		encPubKey="<Your public key (encoded format)>";
+		b58PubKey2 ="<Another public key>";
+
+		
+		b58PubKeyOtherWallet="<Another public key>";
+		b58BuyKey="<Another public key used on buyAccount>";
+		accountId = 0; //An account id
+		account2Id = 1; //An account id
+		account3Id = 2; //An account id
+		account4Id = 3; //An account id
+		password = "password"; //Your wallet password
 		//Initially unlock wallet,
 		client.unlock(password);
 	}
@@ -70,7 +73,7 @@ public class PascalCoinClientTest {
 		System.out.println(String.format("Account %s has name %s and balance %.4f. UpdatedB: %d, Type: %d, State: %s, PrivateSale: %s, Operations %d\n NewEncPubKey: %s, LockedUntilBlock %d,\n EncPubKey %s", account.getAccount(),account.getName(),account.getBalance(), account.getUpdatedB(), account.getType(), account.getState().getValue(), account.getPrivateSale(), account.getnOperation(), account.getNewEncPubkey(), account.getLockedUntilBlock(), account.getEncPubkey()));
 		assertEquals(account.getAccount(), accountId); 
 		account = client.getAccount(account2Id);
-		System.out.println(String.format("Account %s has name %s and balance %.4f. UpdatedB: %d, Type: %d, State: %s, PrivateSale: %s, Operations %d\n NewEncPubKey: %s, LockedUntilBlock %d,\n EncPubKey %s", account.getAccount(),account.getName(),account.getBalance(), account.getUpdatedB(), account.getType(), account.getState().getValue(), account.getPrivateSale(), account.getnOperation(), account.getNewEncPubkey(), account.getLockedUntilBlock(), account.getEncPubkey()));
+		System.out.println(String.format("Account %s has name %s and balance %.4f. UpdatedB: %d, Type: %d, State: %s, PrivateSale: %s, Operations %d\n NewEncPubKey: %s, LockedUntilBlock %d,\n EncPubKey %s Seller account: %d Price: %.4f", account.getAccount(),account.getName(),account.getBalance(), account.getUpdatedB(), account.getType(), account.getState().getValue(), account.getPrivateSale(), account.getnOperation(), account.getNewEncPubkey(), account.getLockedUntilBlock(), account.getEncPubkey(), account.getSellerAccount(), account.getPrice()));
 		assertTrue(account!=null);
 	}
 	
