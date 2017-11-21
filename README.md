@@ -10,15 +10,18 @@ Junit tests are included
 
 Project has been uploaded to Maven central Repository
 ###Maven    
-
+```
 <dependency>   
 	<groupId>com.github.davidbolet.jpascalcoin</groupId>    
 	<artifactId>jPascalcoin</artifactId>      
 	<version>1.0.2</version>  
 </dependency>  
-###Gradle
-implementation 'com.github.davidbolet.jpascalcoin:jPascalcoin:1.0.2'   
+```
 
+###Gradle
+```
+implementation 'com.github.davidbolet.jpascalcoin:jPascalcoin:1.0.2'   
+```
 
 Check junit test for full examples
 You will need to include your account numbers and public keys (default key exported by wallet id b58PubKey)    
