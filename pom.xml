@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.davidbolet.jpascalcoin</groupId>
   <artifactId>jPascalcoin</artifactId>
-   <name>jPascalcoin</name>
+  <name>jPascalcoin</name>
   <version>1.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <url>https://github.com/davidbolet/JPascalCoin</url>
@@ -128,8 +128,11 @@
 	    </plugin>
     </plugins>
   </build>
-  
-  
-  
+    
+  <contributors>
+    <contributor>
+      <name>David Bolet Alcaide</name>
+	</contributor>
+	</contributors>
   
 </project>
