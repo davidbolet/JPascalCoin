@@ -49,8 +49,9 @@
   </dependencies>
   <scm>
      <connection>scm:git:https://github.com/davidbolet/JPascalCoin.git</connection>
-	<developerConnection>scm:git:https://github.com/davidbolet/JPascalCoin.git</developerConnection>
-	  <tag>HEAD</tag>
+	 <developerConnection>scm:git:https://github.com/davidbolet/JPascalCoin.git</developerConnection>
+	 <tag>HEAD</tag>
+	 <url>https://github.com/davidbolet/JPascalCoin</url>
   </scm> 
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -129,10 +130,19 @@
     </plugins>
   </build>
     
-  <contributors>
-    <contributor>
-      <name>David Bolet Alcaide</name>
-	</contributor>
-	</contributors>
+ <developers>
+		<developer>
+			<id>davidbolet</id>
+			<name>David Bolet</name>
+			<email>davidbolet@gmail.com</email>
+			<organization>freelance</organization>
+			<organizationUrl>http://www.firmalia.com</organizationUrl>
+			<roles>
+				<role>Project-Administrator</role>
+				<role>Developer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
   
 </project>
