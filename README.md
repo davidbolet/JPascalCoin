@@ -8,9 +8,21 @@ Junit tests are included
 
 ## Usage
 
-Copy and include the project in your solution. Base package is org.jpascalcoin.api
+Project has been uploaded to Maven central Repository
+###Maven    
+
+<dependency>   
+	<groupId>com.github.davidbolet.jpascalcoin</groupId>    
+	<artifactId>jPascalcoin</artifactId>      
+	<version>1.0.2</version>  
+</dependency>  
+###Gradle
+implementation 'com.github.davidbolet.jpascalcoin:jPascalcoin:1.0.2'   
+
+
 Check junit test for full examples
-You will need to include your account numbers and public keys (default key exported by wallet id b58PubKey)
+You will need to include your account numbers and public keys (default key exported by wallet id b58PubKey)    
+
 
 ## Example:  Listing Wallet Accounts
 
@@ -18,6 +30,23 @@ You will need to include your account numbers and public keys (default key expor
 PascalCoinClient client =  new PascalCoinClientImpl("127.0.0.1",PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT);
 //use either <Encoded Public Key>, <B58 Public Key>
 List<Account> accounts = client.getWalletAccounts("<Encoded Public Key>", "<B58 Public Key>", 0, 100);
+```
+## Full Example show Account's balance:
+```java 
+import java.io.IOException;
+import com.github.davidbolet.jpascalcoin.api.client.*;
+import com.github.davidbolet.jpascalcoin.api.model.Account;
+
+public final class Example1
+{
+    public static void main(final String... args)
+        throws IOException
+    {
+        PascalCoinClient client = new PascalCoinClientImpl();
+        Account account = client.getAccount(0);
+        System.out.println(String.format("Account's balance: %.4f PASC"+account.getBalance()));
+    }
+}
 ```
 
 ## Example: Sending funds
