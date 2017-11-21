@@ -9,7 +9,7 @@ Junit tests are included
 ## Usage
 
 Project has been uploaded to Maven central Repository
-###Maven    
+## Maven    
 ```
 <dependency>   
 	<groupId>com.github.davidbolet.jpascalcoin</groupId>    
@@ -18,7 +18,7 @@ Project has been uploaded to Maven central Repository
 </dependency>  
 ```
 
-###Gradle
+## Gradle
 ```
 implementation 'com.github.davidbolet.jpascalcoin:jPascalcoin:1.0.2'   
 ```
