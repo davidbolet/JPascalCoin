@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
 import com.github.davidbolet.jpascalcoin.api.model.Connection;
+import com.github.davidbolet.jpascalcoin.api.model.DecodeOpHashResult;
 import com.github.davidbolet.jpascalcoin.api.model.DecryptedPayload;
 import com.github.davidbolet.jpascalcoin.api.model.KeyType;
 import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
@@ -144,6 +145,24 @@ public interface PascalCoinClient {
 			 * @param ophash: HEXASTRING - Value ophash received on an operation
 			 *  @return Returns "Operation Object" format JSON object */
 			Operation findOperation(String ophash);
+			
+			/**
+			 * Search an operation made to an account based on n_operation field 
+			 * Return a JSON Object in "Operation Object" format.
+			 * @param account Account number
+			 * @param nOperation: is an incremental value to protect double spend 
+			 *  @return Returns "Operation Object" format JSON object */
+			Operation findNOperation(Integer account,Integer nOperation);
+			
+			/**
+			 * Return a JSON Array with "Operation Object" Search an operation made to an account based on n_operation .
+			 * @param account Account number
+			 * @param nOperationMin Min n_operation to search
+			 * @param nOperationMax  Max n_operation to search
+			 * @param startBlock  (optional) Block number to start search. 0=Search all, including pending operations
+			 * @return Returns an array holding pending operations in "Operation Object" format
+			 */
+			List<Operation> findNOperations(Integer account, Integer nOperationMin, Integer nOperationMax, Integer startBlock);
 
 			/**
 			 * Changes an account Public key, or name, or type value (at least 1 on 3)
@@ -463,4 +482,17 @@ public interface PascalCoinClient {
 			 * Starts the node and the server. Starts connection process
 			 *  @return Boolean "true" */
 			Boolean startNode();
+			
+			/**
+			 * Decodes block/account/n_operation info of a 32 bytes ophash
+			 * @param ophash HEXASTRING with an ophash (ophash is 32 bytes, so must be 64 hexa valid chars)
+			 * @return DecodeOpHashResult Object. Its fields mean the following:
+			 * 
+		     * "block" : Integer. Block number. 0=unknown or pending
+		     * "account" : Integer. Account number
+		     * "n_operation" : Integer. n_operation used by the account. n_operation is an incremental value, cannot be used twice on same account.
+		     * "md160hash" : HEXASTRING with MD160 hash
+			 */
+			DecodeOpHashResult decodeOpHash(String ophash);
+			
 }

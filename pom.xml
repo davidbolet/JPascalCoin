@@ -3,14 +3,13 @@
   <groupId>com.github.davidbolet.jpascalcoin</groupId>
   <artifactId>jPascalcoin</artifactId>
   <name>jPascalcoin</name>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>2.1.6-SNAPSHOT</version>
   <packaging>jar</packaging>
   <url>https://github.com/davidbolet/JPascalCoin</url>
   <description>JPascalCoin is a Java library for PascalCoin. Currently only the JSON-RPC API is supported. 
   It's intended to be used both on Android or Java (java 1.7 is requiered). 
-  Uses both google gson library for json deserialization and retrofit for rest calls. 
-  For logging uses java.util.logging, as it works by default on both Android and pure Java. 
-  </description>
+  Uses google gson library for json deserialization and retrofit for rest calls. 
+  For logging purposes, uses java.util.logging, as it works by default on both Android and pure Java.</description>
 	 <properties>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>  

@@ -13,6 +13,14 @@ public class Operation implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * n_operation param, added in version 2.1.6
+	 * n_operation is an incremental value to protect double spend
+	 */
+	@SerializedName("n_operation")
+	@Expose
+	protected Integer nOperation;
 
 	/** 
 	 * Operation hash used to find this operation in the blockchain. (HEXASTRING).
@@ -159,6 +167,14 @@ public class Operation implements Serializable {
 	@Expose
 	protected String v1Ophash;
 
+	public Integer getNOperation() {
+		return this.nOperation;
+	}
+	
+	public void setNOperation(Integer nOperation) {
+		this.nOperation=nOperation;
+	}
+	
 	public String getOpHash() {
 		return opHash;
 	}

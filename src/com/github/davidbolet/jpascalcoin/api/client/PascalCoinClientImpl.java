@@ -9,9 +9,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.github.davidbolet.jpascalcoin.api.constants.PascalCoinConstants;
+import com.github.davidbolet.jpascalcoin.api.helpers.Byte2HexHelper;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
 import com.github.davidbolet.jpascalcoin.api.model.Connection;
+import com.github.davidbolet.jpascalcoin.api.model.DecodeOpHashResult;
 import com.github.davidbolet.jpascalcoin.api.model.DecryptedPayload;
 import com.github.davidbolet.jpascalcoin.api.model.KeyType;
 import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
@@ -536,6 +538,96 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	}
 
 	@Override
+	public Operation findNOperation(Integer account,Integer nOperation) {
+		Operation result = null;
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","findnoperation");
+		if (account==null)
+			throw new IllegalArgumentException("Account param is mandatory");
+		params.put("account", account);
+		if (nOperation==null)
+			throw new IllegalArgumentException("n_operation param is mandatory");
+		params.put("n_operation", nOperation);
+		
+		body.put("params",params);
+		Call<OpResult<Operation>> findOperationCall= pascalCoinService.findNOperation(body);
+		try {
+			Response<OpResult<Operation>> response = findOperationCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw new RuntimeException(response.body().getErrorMessage());
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+	
+	@Override
+	public List<Operation> findNOperations(Integer account, Integer nOperationMin, Integer nOperationMax, Integer startBlock) {
+		List<Operation> result = null;
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","findnoperations");
+		if (account==null)
+			throw new IllegalArgumentException("Account param is mandatory");
+		params.put("account", account);
+		if (nOperationMin==null)
+			throw new IllegalArgumentException("n_operation_min param is mandatory");
+		params.put("n_operation_min", nOperationMin);
+		if (nOperationMax==null)
+			throw new IllegalArgumentException("n_operation_max param is mandatory");
+		params.put("n_operation_max", nOperationMax);
+		if (startBlock==null)
+			params.put("start_block", 0);
+		else
+			params.put("start_block", startBlock);
+		body.put("params",params);
+		Call<OpResult<List<Operation>>> findOperationsCall= pascalCoinService.findNOperations(body);
+		try {
+			Response<OpResult<List<Operation>>> response = findOperationsCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw new RuntimeException(response.body().getErrorMessage());
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+	
+	@Override
+	public DecodeOpHashResult decodeOpHash(String ophash) {
+		DecodeOpHashResult result = null;
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","decodeophash");
+		if (ophash==null)
+			throw new IllegalArgumentException("Operation hash param is mandatory");
+		params.put("ophash", ophash);
+		
+		body.put("params",params);
+		Call<OpResult<DecodeOpHashResult>> decodeOpHashCall= pascalCoinService.decodeOpHash(body);
+		try {
+			Response<OpResult<DecodeOpHashResult>> response = decodeOpHashCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw new RuntimeException(response.body().getErrorMessage());
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+	
+	@Override
 	public Operation changeAccountInfo(Integer account_target, Integer account_signer, String newEncPubKey,
 			String newB58PubKey, String newName, Short new_type, Double fee, byte[] payload,
 			PayLoadEncryptionMethod payloadMethod, String pwd) {
@@ -559,7 +651,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("new_type", new_type);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -594,9 +686,9 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("amount", amount);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payloadMethod", payloadMethod.getValue());	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -634,7 +726,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("account_signer", account_signer);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload",Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -672,7 +764,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("accounts", accounts);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -716,7 +808,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("seller_account", sellerAccount);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -750,7 +842,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("account_signer", accountSigner);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -797,7 +889,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("amount", amount);	
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -847,7 +939,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("new_type", newType);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -896,7 +988,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (rawoperations!=null && !"".equals(rawoperations))
 			params.put("rawoperations", rawoperations);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -945,7 +1037,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("rawoperations", rawOperations);	
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload",Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -997,7 +1089,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("fee", fee);	
 		params.put("last_n_operation", lastNOperation);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -1041,7 +1133,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (signerB58PubKey!=null)
 			params.put("signer_b58_pubkey", signerB58PubKey);		
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)
@@ -1099,7 +1191,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("last_n_operation", lastNOperation);	
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Base64.getEncoder().encodeToString(payload));		
+			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payloadMethod", payloadMethod);	
 		if (pwd!=null)

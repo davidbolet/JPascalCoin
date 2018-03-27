@@ -6,6 +6,7 @@ import java.util.Map;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
 import com.github.davidbolet.jpascalcoin.api.model.Connection;
+import com.github.davidbolet.jpascalcoin.api.model.DecodeOpHashResult;
 import com.github.davidbolet.jpascalcoin.api.model.DecryptedPayload;
 import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
 import com.github.davidbolet.jpascalcoin.api.model.OpResult;
@@ -196,50 +197,16 @@ public interface PascalCoinService {
 	@POST("/")
     Call<OpResult<Boolean>> stopNode(@Body Map<String, Object> body);
     
-       
-	/*
-	*addnode,
-	*getaccount,
-	*findaccounts,
-	*getwalletaccounts,
-	*getwalletaccountscount,
-	*getwalletpubkeys,
-	*getwalletpubkey,
-	*getwalletcoins,
-	*getblock,
-	*getblocks,
-	*getblockcount,
-	*getblockoperation,
-	*getblockoperations,
-	*getaccountoperations,
-	*getpendings,
-	*findoperation,
-	*changeaccountinfo,
-	*sendto,
-	*changekey,
-	*changekeys,
-	*listaccountforsale,
-	*delistaccountforsale,
-	*buyaccount,
-	*signchangeaccountinfo,
-	*signsendto,
-	*signchangekey,
-	*signlistaccountforsale,
-	signdelistaccountforsale,
-	signbuyaccount,
-	*operationsinfo,
-	*executeoperations,
-	*nodestatus,
-	*encodepubkey,
-	*decodepubkey,
-	*payloadencrypt,
-	*payloaddecrypt,
-	*getconnections,
-	*addnewkey,
-	*lock,
-	*unlock,
-	*setwalletpassword,
-	*stopnode,
-	*startnode
-*/
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+	@POST("/")
+    Call<OpResult<Operation>> findNOperation(@Body Map<String, Object> body);   
+    
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+	@POST("/")
+    Call<OpResult<List<Operation>>> findNOperations(@Body Map<String, Object> body);
+    
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+	@POST("/")
+    Call<OpResult<DecodeOpHashResult>> decodeOpHash(@Body Map<String, Object> body);
+	
 }

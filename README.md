@@ -4,7 +4,11 @@ JPascalCoin is a Java library for PascalCoin. Currently only the JSON-RPC API is
 It's intended to be used both on Android or Java (java 1.7 is requiered).
 Uses both google gson library for json deserialization and retrofit for rest calls. 
 For logging uses java.util.logging, as it works by default on both Android and pure Java.
-Junit tests are included
+Junit tests are included.
+
+Last version has been updated to 2.1.6, in order to keep alignment with PascalCoin Wallet. Previous version was 1.0.2,
+which works with wallet 2.1.3. Warning: version 2.1.6 fails with wallet 2.1.3 as new functions have been added. 
+However, version 1.0.2 still works fine with wallet 2.1.6
 
 ## Usage
 
