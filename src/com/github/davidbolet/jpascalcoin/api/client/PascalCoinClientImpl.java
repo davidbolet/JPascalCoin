@@ -1,7 +1,6 @@
 package com.github.davidbolet.jpascalcoin.api.client;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,8 @@ import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
 import com.github.davidbolet.jpascalcoin.api.services.PascalCoinService;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -58,11 +59,20 @@ public class PascalCoinClientImpl implements PascalCoinClient {
      * Gets or instantiates retrofit library with Gson converter
      * @return initialized Retrofit object
      */
-    Retrofit getRetrofit() {
+    Retrofit getRetrofit(Integer logLevel) {
         if (this.retrofit == null) {
+        	HttpLoggingInterceptor logging = new HttpLoggingInterceptor();  
+        	if (logLevel==1)
+        		logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        	else if (logLevel==2)
+        		logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+        	OkHttpClient.Builder httpClient = new OkHttpClient.Builder();  
+        	if (logLevel!=null && logLevel>0)
+        		httpClient.addInterceptor(logging);  
             this.retrofit = new Retrofit.Builder()
                     .baseUrl(baseUrl)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(httpClient.build())
                     .build();
         }
         return retrofit;
@@ -70,14 +80,14 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	
 	public PascalCoinClientImpl()
 	{
-		this(PascalCoinConstants.DEFAULT_URL,PascalCoinConstants.DEFAULT_MAINNET_PORT );
+		this(PascalCoinConstants.DEFAULT_URL,PascalCoinConstants.DEFAULT_MAINNET_PORT, 0 );
 	}
 	
-	public PascalCoinClientImpl(String server, Short port)
+	public PascalCoinClientImpl(String server, Short port, Integer log)
 	{
 		super();
 		this.baseUrl="http://"+server+":"+port;
-		pascalCoinService=getRetrofit().create(PascalCoinService.class);
+		pascalCoinService=getRetrofit(log).create(PascalCoinService.class);
 		logger.setLevel(Level.ALL);
 	}
 	
@@ -129,7 +139,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	}
 
 	@Override
-	public List<Account> findAccounts(String name, Integer type, Integer status, Integer start, Integer max) {
+	public List<Account> findAccounts(String name, Integer type, Integer start, Integer max) {
 		List<Account> result = null;
 		Map<String,Object> body = getRPCBody();
 		Map<String,Object> params = new HashMap<>();
@@ -138,8 +148,6 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("name", name);
 		if (type!=null)
 			params.put("type", type);		
-		if (status!=null)
-			params.put("status", status);
 		if (start!=null)
 			params.put("start", start);
 		if (max!=null)
@@ -219,7 +227,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	}
 
 	@Override
-	public Integer getWalletAccountsCount(String encPubKey, String b58PubKey, Integer start, Integer max) {
+	public Integer getWalletAccountsCount(String encPubKey, String b58PubKey) {
 		Integer result = null;
 		Map<String,Object> body = getRPCBody();
 		Map<String,Object> params = new HashMap<>();
@@ -228,10 +236,6 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("enc_pubkey", encPubKey);
 		if (b58PubKey!=null)
 			params.put("b58_pubkey", b58PubKey);
-		if (start!=null)
-			params.put("start", start);
-		if (max!=null)
-			params.put("max", max);
 		body.put("params",params);
 		Call<OpResult<Integer>> walletAccountsCountCall= pascalCoinService.getWalletAccountsCount(body);
 		try {
@@ -653,7 +657,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -688,7 +692,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod.getValue());	
+			params.put("payload_method", payloadMethod.getValue());	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -728,7 +732,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload",Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -766,7 +770,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -810,7 +814,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -844,7 +848,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -876,9 +880,9 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Map<String,Object> params = new HashMap<>();
 		body.put("method","buyaccount");
 		if (newEncPubKey!=null)
-			params.put("enc_pubkey", newEncPubKey);
+			params.put("new_enc_pubkey", newEncPubKey);
 		if (newB58PubKey!=null)
-			params.put("b58_pubkey", newB58PubKey);
+			params.put("new_b58_pubkey", newB58PubKey);
 		if (buyerAccount!=null)
 			params.put("buyer_account", buyerAccount);
 		if (sellerAccount!=null)
@@ -891,7 +895,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -941,7 +945,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -990,7 +994,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -1039,7 +1043,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload",Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);			
 		body.put("params",params);
@@ -1091,7 +1095,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);	
 		if (rawOperations!=null)
@@ -1135,7 +1139,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);	
 		if (rawOperations!=null)
@@ -1173,9 +1177,9 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Map<String,Object> params = new HashMap<>();
 		body.put("method","buyaccount");
 		if (newEncPubKey!=null)
-			params.put("enc_pubkey", newEncPubKey);
+			params.put("new_enc_pubkey", newEncPubKey);
 		if (newB58PubKey!=null)
-			params.put("b58_pubkey", newB58PubKey);
+			params.put("new_b58_pubkey", newB58PubKey);
 		if (signerEncPubKey!=null)
 			params.put("signer_enc_pubkey", signerEncPubKey);
 		if (signerB58PubKey!=null)
@@ -1193,7 +1197,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (payload!=null)
 			params.put("payload", Byte2HexHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
-			params.put("payloadMethod", payloadMethod);	
+			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
 			params.put("pwd", pwd);	
 		if (rawOperations!=null)
@@ -1330,7 +1334,8 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Map<String,Object> body = getRPCBody();
 		Map<String,Object> params = new HashMap<>();
 		body.put("method","payloadencrypt");
-		params.put("payload", payload);
+		params.put("payload", Byte2HexHelper.byteToHex(payload.getBytes()));		
+		
 		params.put("payload_method", payloadMethod);
 		if (pwd!=null)
 			params.put("pwd", pwd);

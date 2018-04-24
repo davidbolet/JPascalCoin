@@ -43,10 +43,7 @@ public interface PascalCoinClient {
 			* @param max: Max of accounts returned in array (by default, 100) 
 			* @return list of accounts matching
 			* */
-			List<Account> findAccounts(String name, Integer type , Integer status , Integer start, Integer max);
-
-//			Integer findAccountsCount(String name, Integer type , Integer status);
-
+			List<Account> findAccounts(String name, Integer type, Integer start, Integer max);
 			
 			/**
 			 * Returns a JSON array with all wallet accounts.
@@ -61,10 +58,8 @@ public interface PascalCoinClient {
 			 * Get number of available wallet accounts (total or filtered by public key)
 			 * @param encPubKey: HEXASTRING (optional). If provided, return only accounts of this public key
 			 * @param b58PubKey: String (optional). If provided, return only accounts of this public key. Note: If use enc_pubkey and b58_pubkey together and is not the same public key, will return an error
-			 * @param start: Integer (optional, default = 0). If provided, will return wallet accounts starting at this position (index starts at position 0)
-			 * @param max: Integer (optional, default = 100). If provided, will return max accounts. If not provided, max=100 by default
 			 * @return Returns an integer with total */		
-			Integer getWalletAccountsCount(String encPubKey, String b58PubKey, Integer start , Integer max );
+			Integer getWalletAccountsCount(String encPubKey, String b58PubKey);
 
 			/**
 			 * Returns a JSON Object with a public key if found in the Wallet

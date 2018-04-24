@@ -6,7 +6,12 @@ Uses both google gson library for json deserialization and retrofit for rest cal
 For logging uses java.util.logging, as it works by default on both Android and pure Java.
 Junit tests are included.
 
-Last version has been updated to 2.1.6, in order to keep alignment with PascalCoin Wallet. Previous version was 1.0.2,
+Last changes (version 2.1.8)
+* Fixed bug with buyaccount and signbuyaccount functions
+* Added message trace options to server calls
+* removed ignored params start and max on getAccountsCount funcion
+
+Version version 1.0.3 was upgraded to 2.1.6, in order to keep alignment with PascalCoin Wallet. Previous version was 1.0.2,
 which works with wallet 2.1.3. Warning: version 2.1.6 fails with wallet 2.1.3 as new functions have been added. 
 However, version 1.0.2 still works fine with wallet 2.1.6
 
