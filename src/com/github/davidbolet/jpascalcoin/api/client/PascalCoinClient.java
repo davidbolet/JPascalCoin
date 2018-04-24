@@ -38,7 +38,6 @@ public interface PascalCoinClient {
 			* Find accounts by name/type and returns them as an array of Account objects
 			* @param name: If has value, will return the account that match name
 			* @param type: If has value, will return accounts with same type
-			* @param status: If has value, will filter account with status as follows: 0 = all accounts, 1 = accounts for public or private sale only, 2 = accounts for private sale only, 3 = accounts for public sale only 
 			* @param start: Start account (by default, 0) 
 			* @param max: Max of accounts returned in array (by default, 100) 
 			* @return list of accounts matching
