@@ -1,8 +1,8 @@
 package com.github.davidbolet.jpascalcoin.api.model;
 
-import com.github.davidbolet.jpascalcoin.api.helpers.HexBinaryConverter;
+//import com.github.davidbolet.jpascalcoin.api.helpers.HexBinaryConverter;
+//import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -157,8 +157,8 @@ public class Operation implements Serializable {
 	*/
 	@SerializedName("payload")
 	@Expose
-	@JsonAdapter(HexBinaryConverter.class)
-	protected byte[] payLoad;
+	//@JsonAdapter(HexBinaryConverter.class)
+	protected String payLoad;
 
 	/** 
 	 * Operation hash calculated using V1 algorithm. Only provided for operations before V2 activation. (HEXASTRING).
@@ -319,11 +319,11 @@ public class Operation implements Serializable {
 		this.encPubKey = encPubKey;
 	}
 
-	public byte[] getPayLoad() {
+	public String getPayLoad() {
 		return payLoad;
 	}
 
-	public void setPayLoad(byte[] payLoad) {
+	public void setPayLoad(String payLoad) {
 		this.payLoad = payLoad;
 	}
 

@@ -83,6 +83,11 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		this(PascalCoinConstants.DEFAULT_URL,PascalCoinConstants.DEFAULT_MAINNET_PORT, 0 );
 	}
 	
+	public PascalCoinClientImpl(String server, Short port)
+	{
+		this(server,port, 0 );
+	}
+	
 	public PascalCoinClientImpl(String server, Short port, Integer log)
 	{
 		super();
@@ -1231,6 +1236,11 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Call<OpResult<List<Operation>>> operationsInfoCall= pascalCoinService.operationsInfo(body);
 		try {
 			Response<OpResult<List<Operation>>> response = operationsInfoCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw new RuntimeException(response.body().getErrorMessage());
+			}
 			result = response.body().getResult();
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, e.getMessage());
@@ -1251,6 +1261,11 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Call<OpResult<List<Operation>>> executeOperationsCall= pascalCoinService.executeOperations(body);
 		try {
 			Response<OpResult<List<Operation>>> response = executeOperationsCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw new RuntimeException(response.body().getErrorMessage());
+			}
 			result = response.body().getResult();
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, e.getMessage());
@@ -1268,6 +1283,11 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Call<OpResult<NodeStatus>> nodeStatusCall= pascalCoinService.getNodeStatus(body);
 		try {
 			Response<OpResult<NodeStatus>> response = nodeStatusCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw new RuntimeException(response.body().getErrorMessage());
+			}
 			result = response.body().getResult();
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, e.getMessage());
@@ -1328,15 +1348,34 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	}
 
 	@Override
-	public String payloadEncrypt(String payload, PayLoadEncryptionMethod payloadMethod, String pwd) {
+	public String payloadEncrypt(String payload, String payloadMethod, String pwd, String encPubKey, String b58PubKey) {
 		if (payload==null || payloadMethod==null) throw new IllegalArgumentException("Params are mandatory");
 		String result = null;
 		Map<String,Object> body = getRPCBody();
 		Map<String,Object> params = new HashMap<>();
 		body.put("method","payloadencrypt");
-		params.put("payload", Byte2HexHelper.byteToHex(payload.getBytes()));		
-		
+		params.put("payload", Byte2HexHelper.byteToHex(payload.getBytes()));
+		if (!"aes".equals(payloadMethod) &&!"pubkey".equals(payloadMethod) && !"none".equals(payloadMethod))
+		{
+			throw new IllegalArgumentException("payloadMethod parameter can be only any of these: 'aes', 'none' or 'pubkey'");
+		}
+		if ("aes".equals(payloadMethod) && pwd ==null)
+		{
+			throw new IllegalArgumentException("pwd parameter is mandatory when payloadMethod is 'aes'");
+		}
+		if ("pubkey".equals(payloadMethod) && encPubKey==null && b58PubKey==null)
+		{
+			throw new IllegalArgumentException("You have to specify encPubKey or b58PubKey parameters when payloadMethod is 'pubkey'");
+		}
+		if ("pubkey".equals(payloadMethod) && encPubKey!=null && b58PubKey!=null)
+		{
+			throw new IllegalArgumentException("You have to specify encPubKey or b58PubKey parameters when payloadMethod is 'pubkey', but not both at the same time");
+		}
 		params.put("payload_method", payloadMethod);
+		if (encPubKey!=null)
+			params.put("enc_pubkey", encPubKey);
+		if (b58PubKey!=null)
+			params.put("b58_pubkey", b58PubKey);
 		if (pwd!=null)
 			params.put("pwd", pwd);
 		body.put("params",params);
@@ -1369,6 +1408,11 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Call<OpResult<DecryptedPayload>> payloadDecryptCall= pascalCoinService.payloadDecrypt(body);
 		try {
 			Response<OpResult<DecryptedPayload>> response = payloadDecryptCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw new RuntimeException(response.body().getErrorMessage());
+			}
 			result = response.body().getResult();
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, e.getMessage());
@@ -1412,6 +1456,11 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Call<OpResult<PublicKey>> addNewKeyCall= pascalCoinService.addNewKey(body);
 		try {
 			Response<OpResult<PublicKey>> response = addNewKeyCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw new RuntimeException(response.body().getErrorMessage());
+			}
 			result = response.body().getResult();
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, e.getMessage());

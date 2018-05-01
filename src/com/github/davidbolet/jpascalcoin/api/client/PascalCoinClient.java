@@ -424,7 +424,7 @@ public interface PascalCoinClient {
 			 * @param payloadMethod: Payload method 
 			 * @param pwd: Using a Password. Must provide pwd param 
 			 * @return Returns a HEXASTRING with encrypted payload */
-			String payloadEncrypt(String payload, PayLoadEncryptionMethod payloadMethod, String pwd);
+			String payloadEncrypt(String payload, String payloadMethod, String pwd, String encPubKey, String b58PubKey);
 
 			/**
 			 * Returns a HEXASTRING with decrypted text (a payload) using private keys in the wallet or a list of Passwords (used in "aes" encryption)
