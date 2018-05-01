@@ -421,8 +421,10 @@ public interface PascalCoinClient {
 			/**
 			 * Encrypt a text "payload" using "payload_method"
 			 * @param payload: HEXASTRING - Text to encrypt in hexadecimal format 
-			 * @param payloadMethod: Payload method 
+			 * @param payloadMethod: Payload method. Possible values are 'aes' 'pubkey' or 'none'
 			 * @param pwd: Using a Password. Must provide pwd param 
+			 * @param encPubKey: Public key in encoded format to use if payloadMethod='pubkey'
+			 * @param b58PubKey: Public key in b58 format to use if payloadMethod='pubkey'
 			 * @return Returns a HEXASTRING with encrypted payload */
 			String payloadEncrypt(String payload, String payloadMethod, String pwd, String encPubKey, String b58PubKey);
 
