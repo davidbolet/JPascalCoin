@@ -6,6 +6,11 @@ Uses both google gson library for json deserialization and retrofit for rest cal
 For logging uses java.util.logging, as it works by default on both Android and pure Java.
 Junit tests are included.
 
+Last changes (version 2.1.9)
+* Fixed bug with payloadEncrypt function, added correct parameters
+* Added some missing error-handling in several methods
+* Changed signature of field 'payload' on Operation class, now it's a string to avoid some issues with Base64 encoding/decoding
+
 Last changes (version 2.1.8)
 * Fixed bug with buyaccount and signbuyaccount functions
 * Added message trace options to server calls
