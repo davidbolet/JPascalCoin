@@ -8,11 +8,13 @@ import com.github.davidbolet.jpascalcoin.api.model.Block;
 import com.github.davidbolet.jpascalcoin.api.model.Connection;
 import com.github.davidbolet.jpascalcoin.api.model.DecodeOpHashResult;
 import com.github.davidbolet.jpascalcoin.api.model.DecryptedPayload;
+import com.github.davidbolet.jpascalcoin.api.model.MultiOperation;
 import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
 import com.github.davidbolet.jpascalcoin.api.model.OpResult;
 import com.github.davidbolet.jpascalcoin.api.model.Operation;
 import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
+import com.github.davidbolet.jpascalcoin.api.model.SignResult;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -84,6 +86,10 @@ public interface PascalCoinService {
     @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
 	@POST("/")
     Call<OpResult<List<Operation>>> getPendings(@Body Map<String, Object> body);
+    
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+   	@POST("/")
+    Call<OpResult<Integer>> getPendingsCount(@Body Map<String, Object> body);
     
     @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
 	@POST("/")
@@ -208,5 +214,31 @@ public interface PascalCoinService {
     @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
 	@POST("/")
     Call<OpResult<DecodeOpHashResult>> decodeOpHash(@Body Map<String, Object> body);
+    
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+	@POST("/")
+    Call<OpResult<SignResult>> signMessage(@Body Map<String, Object> body);
+    
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+	@POST("/")
+    Call<OpResult<SignResult>> verifySign(@Body Map<String, Object> body);
+    
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+ 	@POST("/")
+    Call<OpResult<MultiOperation>> multiOperationAddOperation(@Body Map<String, Object> body);
+    
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+ 	@POST("/")
+    Call<OpResult<MultiOperation>> multiOperationSignOffline(@Body Map<String, Object> body);
+    
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+ 	@POST("/")
+    Call<OpResult<MultiOperation>> multiOperationSignOnline(@Body Map<String, Object> body);
+ 	
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+ 	@POST("/")
+    Call<OpResult<MultiOperation>> multiOperationDeleteOperation(@Body Map<String, Object> body);
 	
+    
+    
 }

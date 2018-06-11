@@ -91,6 +91,15 @@ public class NodeStatus implements Serializable {
 	@SerializedName("nodeservers")
 	@Expose
 	protected List<NodeServer> nodeServers;
+	
+	
+	/**
+	 *  OpenSSL library version as described in OpenSSL_version_num 
+	 *  ( https://www.openssl.org/docs/man1.1.0/crypto/OPENSSL_VERSION_NUMBER.html )
+	 */
+	@SerializedName("openssl")
+	@Expose
+	protected String openssl;
 
 
 	public Boolean getReady() {
@@ -200,6 +209,16 @@ public class NodeStatus implements Serializable {
 
 	public void setNodeServers(List<NodeServer> nodeServers) {
 		this.nodeServers = nodeServers;
+	}
+
+
+	public String getOpenssl() {
+		return openssl;
+	}
+
+
+	public void setOpenssl(String openssl) {
+		this.openssl = openssl;
 	}
 	
 	

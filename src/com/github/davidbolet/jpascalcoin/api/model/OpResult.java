@@ -2,6 +2,7 @@ package com.github.davidbolet.jpascalcoin.api.model;
 
 import java.io.Serializable;
 
+import com.github.davidbolet.jpascalcoin.exception.RPCApiException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -17,7 +18,7 @@ public class OpResult<T> implements Serializable {
 	
 	@SerializedName("error")
     @Expose
-	private Error error;
+	private RPCApiException error;
 
 	public T getResult() {
 		return result;
@@ -32,12 +33,12 @@ public class OpResult<T> implements Serializable {
 		return getError()!=null;
 	}
 	
-	public Error getError()
+	public RPCApiException getError()
 	{
 		return this.error;
 	}
 	
-	public void setError(Error error)
+	public void setError(RPCApiException error)
 	{
 		this.error = error;
 	}
@@ -45,14 +46,10 @@ public class OpResult<T> implements Serializable {
 	public String getErrorMessage()
 	{
 		if (this.isError())
-			return this.error.message;
+			return this.error.getMessage();
 		else
 			return "";
 	}
 	
-	public static class Error {
-	    String message;
-	    
-	}
 	
 }

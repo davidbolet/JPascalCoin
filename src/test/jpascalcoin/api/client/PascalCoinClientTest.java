@@ -3,6 +3,7 @@ package test.jpascalcoin.api.client;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
@@ -12,18 +13,25 @@ import org.junit.Test;
 import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClient;
 import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClientImpl;
 import com.github.davidbolet.jpascalcoin.api.constants.PascalCoinConstants;
+import com.github.davidbolet.jpascalcoin.api.helpers.Byte2HexHelper;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
+import com.github.davidbolet.jpascalcoin.api.model.AccountKey;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
 import com.github.davidbolet.jpascalcoin.api.model.Connection;
 import com.github.davidbolet.jpascalcoin.api.model.DecodeOpHashResult;
 import com.github.davidbolet.jpascalcoin.api.model.DecryptedPayload;
 import com.github.davidbolet.jpascalcoin.api.model.KeyType;
+import com.github.davidbolet.jpascalcoin.api.model.MultiOperation;
 import com.github.davidbolet.jpascalcoin.api.model.NodeServer;
 import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
+import com.github.davidbolet.jpascalcoin.api.model.OpChanger;
+import com.github.davidbolet.jpascalcoin.api.model.OpReceiver;
+import com.github.davidbolet.jpascalcoin.api.model.OpSender;
 import com.github.davidbolet.jpascalcoin.api.model.Operation;
 import com.github.davidbolet.jpascalcoin.api.model.PayLoadEncryptionMethod;
 import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
+import com.github.davidbolet.jpascalcoin.api.model.SignResult;
 
 public class PascalCoinClientTest {
 	PascalCoinClient client;
@@ -39,11 +47,14 @@ public class PascalCoinClientTest {
 	public void init()
 	{
 		//String base="localhost";
+		//client = new PascalCoinClientImpl("10.211.55.10",PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT,1);
 		client = new PascalCoinClientImpl("10.211.55.7",PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT,1);
-		b58PubKey ="3GhhbopiJkQFZYUJ2vAYMmBJj2hWybSLJjkHEvqPjpdaDKGG8S5CvCzvYVbs9azzvSEtFDpvvZxftvB5dgGnDunvA64oq9HqfskigY";
-		b58PubKey2 = "3GhhbouPE7mf5rVxu7rm8f2dEczavgmeZXoxU5Z1QtraVQwurYBgmRS2Q5F49VyVn5yDpQV87a6VTTFiKAF6bDbmeDb2MDxLxUT616";
-//		b58PubKey="<Your public key (as wallet exports)>";
-		encPubKey="CA022000C7B6C22FB3157AD390AF37F45CE4D4D57A6D5E8B27E6CC2FDE3EE98A8FFAF04E2000E19B091D9C96A7FF3C8C2DF22BD9F73F90DCA919227E4B82363DA4B0B6A6BE09";
+		
+		//b58PubKey ="3GhhbopiJkQFZYUJ2vAYMmBJj2hWybSLJjkHEvqPjpdaDKGG8S5CvCzvYVbs9azzvSEtFDpvvZxftvB5dgGnDunvA64oq9HqfskigY";
+		b58PubKey = "3GhhbouPE7mf5rVxu7rm8f2dEczavgmeZXoxU5Z1QtraVQwurYBgmRS2Q5F49VyVn5yDpQV87a6VTTFiKAF6bDbmeDb2MDxLxUT616";
+		//b58PubKey="<Your public key (as wallet exports)>";
+		//b58PubKey="3Ghhbom4iB3ZAGDPq2C4jE2NrF8n9QTno7jvJPzJLkPmoQs9a58Q82RPQqXaJV5LQBMjdNDQquWbPB5o4QHVLWLwoAwkJ7dQ3A4xFA";
+		//encPubKey="CA022000206D6BBAE9FFBC5582D711D472E688C7FF0D459956E58A5C9BBA090075C71626200062730E04C61BCCD33853B4197BF28CF9CF280E37407F526712143B11D9AD3454";
 //		b58PubKey2 ="<Another public key>";
 
 		
@@ -72,7 +83,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testGetAccount()
 	{
-		Account account = client.getAccount(account4Id);
+		Account account = client.getAccount(accountId);
 		System.out.println(String.format("Account %s has name %s and balance %.4f. UpdatedB: %d, Type: %d, State: %s, PrivateSale: %s, Operations %d\n NewEncPubKey: %s, LockedUntilBlock %d,\n EncPubKey %s", account.getAccount(),account.getName(),account.getBalance(), account.getUpdatedB(), account.getType(), account.getState().getValue(), account.getPrivateSale(), account.getnOperation(), account.getNewEncPubkey(), account.getLockedUntilBlock(), account.getEncPubkey()));
 		assertEquals(account.getAccount(), accountId); 
 		account = client.getAccount(account2Id);
@@ -100,7 +111,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testListAccounts()
 	{	
-		List<Account> result = client.getWalletAccounts(encPubKey, null, null, null);
+		List<Account> result = client.getWalletAccounts(null, null, null, null);
 		System.out.println(String.format("GetAccounts size %d", result.size()));
 		for(Account account:result)
 		{
@@ -115,22 +126,39 @@ public class PascalCoinClientTest {
 	@Test
 	public void testFindAccounts()
 	{	
-		String search="ca%";
-		List<Account> result = client.findAccounts(search, null, 0, 1000);
-		System.out.println(String.format("Finding accounts containing '%s' on name. Size %d", search,result.size()));
+		String search="david";
+		List<Account> result = client.findAccounts(search, null, 0, 10);		
+		System.out.println(String.format("Finding account with name '%s' (Exact match). Size %d", search,result.size()));
 		for(Account account:result)
 		{
 			System.out.println(String.format("Account %s has name %s and balance %.4f. State is %s", account.getAccount(),account.getName(),account.getBalance(), account.getState()));
 		}
 		assertTrue(result!=null);
+		result = client.findAccounts(search, false,null, null,null,null,  0, 10);
+		System.out.println(String.format("Finding accounts containing '%s' on name. Size %d", search,result.size()));
+		for(Account account:result)
+		{
+			System.out.println(String.format("Account %s has name %s and balance %.4f. State is %s", account.getAccount(),account.getName(),account.getBalance(), account.getState()));
+		}
 //		int type=2;
 //		result = client.findAccounts(null, type, null, null);
+		result = client.findAccounts(null, null,null, true,null,null,  0, 10);
 //		System.out.println(String.format("Finding accounts for with type=%d. Size %d", type, result.size()));
-//		for(Account account:result)
-//		{
-//			System.out.println(String.format("For Sale: %s name %s and price %.4f. State is %s", account.getAccount(),account.getName(),account.getPrice(), account.getState()));
-//		}
-		
+		for(Account account:result)
+		{
+			System.out.println(String.format("Finding accounts for sale: %s name %s and price %.4f. State is %s", account.getAccount(),account.getName(),account.getPrice()/10000, account.getState()));
+		}
+		result = client.findAccounts(null, null, null,null,100.0,1000.0,  0, 10);
+//		System.out.println(String.format("Finding accounts for with type=%d. Size %d", type, result.size()));
+		for(Account account:result)
+		{
+			System.out.println(String.format("Finding Account %d has balance between : %.4f and %.4f. Account balance %.4f State is %s", account.getAccount(),100.0,1000.0,account.getBalance(), account.getState()));
+		}
+		result = client.findAccounts(null, null,null, null,10000.0,null,  0, 10);
+		for(Account account:result)
+		{
+			System.out.println(String.format("Finding Account %d balance greater than : %.4f. Account balance %.4f State is %s", account.getAccount(),10000.0,account.getBalance(), account.getState()));
+		}
 	}
 	
 	/**
@@ -165,7 +193,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testGetWalletCoins()
 	{	
-		Double coins = client.getWalletCoins(null, b58PubKey);
+		Double coins = client.getWalletCoins(null, null);
 		
 		System.out.println(String.format("Wallet coins %.4f", coins));
 		
@@ -226,6 +254,8 @@ public class PascalCoinClientTest {
 	@Test
 	public void testPendings()
 	{
+		Integer count= client.getPendingsCount();
+		System.out.print(String.format("Number of pending operations: %d\n",count));
 		List<Operation> operations = client.getPendings();
 		for(Operation op: operations)
 		{
@@ -233,6 +263,8 @@ public class PascalCoinClientTest {
 		}
 		assertTrue(operations!=null);
 	}	
+	
+
 	
 	/**
 	 * Tests findOperation
@@ -409,13 +441,29 @@ public class PascalCoinClientTest {
 	}
 	
 	/**
+	 * Tests findOperation
+	 */
+	@Test
+	public void testSignAndVerifySign()
+	{
+		String toSign="This is the text that will be signed";
+		String hex=Byte2HexHelper.byteToHex(toSign.getBytes());
+		String hex2=Byte2HexHelper.byteToHex("Tengo una vaca lechera, no es una vaca cualquiera".getBytes());
+		SignResult res= client.signMessage(hex, encPubKey, null);
+		assertTrue(res!=null);
+		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
+		res = client.verifySign(hex2, encPubKey, res.getSignature());
+		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
+	}
+	
+	/**
 	 * Tests getNodeStatus, and related entities NodeStatus, NodeServer and NetStats
 	 */
 	@Test
 	public void testNodeStatus()
 	{	
 		NodeStatus status = client.getNodeStatus();
-		System.out.println(String.format("Node status: Blocks: %d Locked %s, NetProtocol version %d, net protocol available version: %d, status descriptor %s, version %s, readydescriptor %s", status.getBlocks(), status.getLocked(), status.getNetProtocol().getVersion(), status.getNetProtocol().getAvailableVersion(), status.getStatusDescriptor(), status.getVersion(), status.getReadyDescriptor()));
+		System.out.println(String.format("Node status: Blocks: %d Locked %s, NetProtocol version %d, net protocol available version: %d, SSL version %s, status descriptor %s, version %s, readydescriptor %s", status.getBlocks(), status.getLocked(), status.getNetProtocol().getVersion(), status.getNetProtocol().getAvailableVersion(),status.getOpenssl() ,status.getStatusDescriptor(), status.getVersion(), status.getReadyDescriptor()));
 		for (NodeServer server: status.getNodeServers())
 		{
 			System.out.println(String.format("Node server: IP %s, port %d, attempts: %d, last connect: %s", server.getIP(), server.getPort(), server.getAttempts(), server.getLastConnect()));
@@ -454,7 +502,7 @@ public class PascalCoinClientTest {
 		System.out.println(String.format("Password: %s,\noriginal payload %s,\nunencrypted payload %s\nEncoded Pub key %s\nResult %s\nPayload HEX %s", dp.getDecryptPassword(), dp.getOriginalPayload(),dp.getUnencryptedPayload(), dp.getEncodedPubKey(), dp.getResult(), dp.getUnencryptedPayloadHex() ));
 		assertTrue(crypted1!=null);
 		//2-TEST pubkey
-		String crypted2 = client.payloadEncrypt("this is a test", "pubkey", "123456", null, b58PubKey);
+		String crypted2 = client.payloadEncrypt("this is a test", "pubkey", null, null, b58PubKey);
 		System.out.println(String.format("Encrypted text: %s", crypted2));
 		DecryptedPayload dp2 =  client.payloadDecrypt(crypted2, null);
 		System.out.println(String.format("Original payload %s,\nunencrypted payload %s\nEncoded Pub key %s\nResult %s\nPayload HEX %s",  dp2.getOriginalPayload(),dp2.getUnencryptedPayload(), dp2.getEncodedPubKey(), dp2.getResult(), dp2.getUnencryptedPayloadHex() ));
@@ -522,6 +570,85 @@ public class PascalCoinClientTest {
 		assertTrue(result!=null); 
 	}
 	
+	@Test
+	public void multiOpAddTest() {
+		
+		String senderB8PubKey="3GhhbouPE7mf5rVxu7rm8f2dEczavgmeZXoxU5Z1QtraVQwurYBgmRS2Q5F49VyVn5yDpQV87a6VTTFiKAF6bDbmeDb2MDxLxUT616";
+		String receiverB58PubKey="3GhhbopiJkQFZYUJ2vAYMmBJj2hWybSLJjkHEvqPjpdaDKGG8S5CvCzvYVbs9azzvSEtFDpvvZxftvB5dgGnDunvA64oq9HqfskigY";
+				
+		Account senderAccount = client.getAccount(381403);
+		
+//		RawOperation rop = client.signSendTo(381403, 126682, null, senderB8PubKey, null, receiverB58PubKey, senderAccount.getnOperation(), 0.02, 0.0, "Test signSend".getBytes() , PayLoadEncryptionMethod.AES, "123456", null);
+//		System.out.println(String.format("Num operations: %d Total amount: %.4f, Total fee: %.4f, Raw Operations: %s",rop.getNumOperations(), rop.getTotalAmount(), rop.getTotalFee(), rop.getRawOperations()));
+//		assertTrue(rop!=null);
+//		
+//		String rawoperations= "0100000001000000DBD1050011000000DAEE0100C8000000000000000000000000000000200053616C7465645F5F961DD005C65FA70C3F3DEE063C411083CF03314A69803E2900000000000020001F72ABDF23C6AD4C41A86A1D35E0FE443DA5BF3B00A097F7C553BA3B875863092000021D8D5F45E6AAC5A8EEF373A347E8686872BD319DF5096A95A4FC6E535F92BE";
+		String payload1="This Payload from sender1";
+		String payload1Hex=Byte2HexHelper.byteToHex(payload1.getBytes());
+		OpSender op1=new OpSender();
+		op1.setAccount(381403);
+		op1.setAmount(0.2);
+		op1.setnOperation(senderAccount.getnOperation()+1);
+		op1.setPayLoad(payload1Hex);
+		
+		String payload2="This Payload to receiver";
+		String payload2Hex=Byte2HexHelper.byteToHex(payload2.getBytes());
+		OpReceiver op2=new OpReceiver();
+		op2.setAccount(126682);
+		op2.setAmount(0.2);
+		op2.setPayLoad(payload2Hex);
+		
+		OpChanger op3=new OpChanger();
+		op3.setFee(0.0);
+		op3.setAccount(381404);
+		op3.setNewType(1);
+		op3.setNewName("les.acacies");
+		
+		List<OpSender> senders = new ArrayList<OpSender>();
+		senders.add(op1);
+		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
+		receivers.add(op2);
+		List<OpChanger> changers = new ArrayList<OpChanger>();
+		//changers.add(op3);
+		MultiOperation res = client.multiOperationAddOperation(null, true, senders, receivers, changers);
+		
+		assertTrue(res!=null);
+		System.out.println(String.format("Not signed: %d, Signed: %d, Fee: %.4f PASC, Amount:  %.4f PASC, Can Execute:%b", res.getNotSignedCount(),res.getSignedCount(), res.getFee(), res.getAmount(), res.getSignedCanExecute()));
+		
+		senders.clear();
+		receivers.clear();
+		changers.add(op3);
+		
+		MultiOperation res2 = client.multiOperationAddOperation(res.getRawOperations(), true, senders, receivers, changers);
+		assertTrue(res2!=null);
+		System.out.println(String.format("Not signed: %d, Signed: %d, Fee: %.4f PASC, Amount:  %.4f PASC, Can Execute:%b", res2.getNotSignedCount(),res2.getSignedCount(), res2.getFee(), res2.getAmount(), res2.getSignedCanExecute()));
+		
+		List<AccountKey> signers = new ArrayList<>();
+		AccountKey key=new AccountKey();
+		key.setAccount(381403);
+		key.setBase58PubKey(senderB8PubKey);
+		signers.add(key);
+		
+		MultiOperation res3 = client.multiOperationSignOffline(res2.getRawOperations(), signers);
+		assertTrue(res3!=null);
+		System.out.println(String.format("Not signed: %d, Signed: %d, Fee: %.4f PASC, Amount:  %.4f PASC, Can Execute:%b", res3.getNotSignedCount(),res3.getSignedCount(), res3.getFee(), res3.getAmount(), res3.getSignedCanExecute()));
+	
+		MultiOperation res4 = client.multiOperationSignOnline(res3.getRawOperations());
+		assertTrue(res4!=null);
+		System.out.println(String.format("Not signed: %d, Signed: %d, Fee: %.4f PASC, Amount:  %.4f PASC, Can Execute:%b", res4.getNotSignedCount(),res4.getSignedCount(), res4.getFee(), res4.getAmount(), res4.getSignedCanExecute()));
+
+		MultiOperation res5= client.multiOperationDeleteOperation(res4.getRawOperations(), 0);
+		assertTrue(res5!=null);
+		System.out.println(String.format("Not signed: %d, Signed: %d, Fee: %.4f PASC, Amount:  %.4f PASC, Can Execute:%b", res5.getNotSignedCount(),res5.getSignedCount(), res5.getFee(), res5.getAmount(), res5.getSignedCanExecute()));
+
+		
+//		List<Operation> operations=client.executeOperations(res4.getRawOperations());
+//		for(Operation op: operations)
+//		{
+//			System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
+//		}
+	}
+	
 	/**
 	 * Tests lock, unlock and setWalletPassword functions
 	 * If you want to execute the test, remove ignore it and use your passwords ;)
@@ -546,5 +673,7 @@ public class PascalCoinClientTest {
 		System.out.println(String.format("Password changed? %s", result));
 		assertEquals(result, Boolean.TRUE);
 	}
+	
+	
 	
 }

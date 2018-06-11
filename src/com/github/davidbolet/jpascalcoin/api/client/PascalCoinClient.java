@@ -3,16 +3,22 @@ package com.github.davidbolet.jpascalcoin.api.client;
 import java.util.List;
 
 import com.github.davidbolet.jpascalcoin.api.model.Account;
+import com.github.davidbolet.jpascalcoin.api.model.AccountKey;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
 import com.github.davidbolet.jpascalcoin.api.model.Connection;
 import com.github.davidbolet.jpascalcoin.api.model.DecodeOpHashResult;
 import com.github.davidbolet.jpascalcoin.api.model.DecryptedPayload;
 import com.github.davidbolet.jpascalcoin.api.model.KeyType;
+import com.github.davidbolet.jpascalcoin.api.model.MultiOperation;
 import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
+import com.github.davidbolet.jpascalcoin.api.model.OpChanger;
+import com.github.davidbolet.jpascalcoin.api.model.OpReceiver;
+import com.github.davidbolet.jpascalcoin.api.model.OpSender;
 import com.github.davidbolet.jpascalcoin.api.model.Operation;
 import com.github.davidbolet.jpascalcoin.api.model.PayLoadEncryptionMethod;
 import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
+import com.github.davidbolet.jpascalcoin.api.model.SignResult;
 
 /**
  * Java wrapper for API methods offered by pascalcoin wallet
@@ -33,16 +39,6 @@ public interface PascalCoinClient {
 			* @param account: Cardinal containing account number 
 			* @return Account the account object */
 			Account getAccount(Integer account);
-
-			/**
-			* Find accounts by name/type and returns them as an array of Account objects
-			* @param name: If has value, will return the account that match name
-			* @param type: If has value, will return accounts with same type
-			* @param start: Start account (by default, 0) 
-			* @param max: Max of accounts returned in array (by default, 100) 
-			* @return list of accounts matching
-			* */
-			List<Account> findAccounts(String name, Integer type, Integer start, Integer max);
 			
 			/**
 			 * Returns a JSON array with all wallet accounts.
@@ -60,6 +56,13 @@ public interface PascalCoinClient {
 			 * @return Returns an integer with total */		
 			Integer getWalletAccountsCount(String encPubKey, String b58PubKey);
 
+			/** 
+			* Returns a JSON Array with all pubkeys of the Wallet (address)
+			* @param start: Integer (optional, default = 0). If provided, will return wallet public keys starting at this position (index starts at position 0)
+			* @param max: Integer (optional, default = 100). If provided, will return max public keys. If not provided, max=100 by default
+			* @return Returns a JSON Array with "Public Key Object" */
+			List<PublicKey> getWalletPubKeys(Integer start, Integer max);
+			
 			/**
 			 * Returns a JSON Object with a public key if found in the Wallet
 			 * @param encPubKey: HEXASTRING
@@ -67,13 +70,6 @@ public interface PascalCoinClient {
 			 * Note: If use enc_pubkey and b58_pubkey together and is not the same public key, will return an error
 			 * @return Returns a JSON Object with a "Public Key Object" */
 			PublicKey getWalletPubKey(String encPubKey, String b58PubKey);
-
-			/** 
-			* Returns a JSON Array with all pubkeys of the Wallet (address)
-			* @param start: Integer (optional, default = 0). If provided, will return wallet public keys starting at this position (index starts at position 0)
-			* @param max: Integer (optional, default = 100). If provided, will return max public keys. If not provided, max=100 by default
-			* @return Returns a JSON Array with "Public Key Object" */
-			List<PublicKey> getWalletPubKeys(Integer start, Integer max);
 
 			/**
 			 * Returns coins balance.
@@ -130,9 +126,26 @@ public interface PascalCoinClient {
 			List<Operation> getAccountOperations(Integer account, Integer depth, Integer start, Integer max);
 
 			/**
+			 * Return a JSON Array with "Operation Object" items. Operations made over an account Operations are returned in DESCENDING order
+			 * @param account: Account number (0..accounts count-1)
+			 * @param startblock: Integer - (Optional, default value 0) start searching backwards on a specific block where this account has been affected. Allowed to use deep as a param name too.
+			 * @param depth: Integer - (Optional, default value 100) Depth to search on blocks where this account has been affected. Allowed to use deep as a param name too.
+			 * @param start: Integer (optional, default = 0). If provided, will start at this position (index starts at position 0). If start is -1, then will include pending operations, otherwise only operations included on the blockchain
+			 * @param max: Integer (optional, default = 100). If provided, will return max registers. If not provided, max=100 by default
+			 * @return Returns an array holding operations made over account in "Operation Object" format */
+			List<Operation> getAccountOperations(Integer account, Integer startblock, Integer depth, Integer start, Integer max);
+			
+			
+			/**
 			 * Return a JSON Array with "Operation Object" items with operations pending to be included at the Blockchain.
 			 * @return Returns an array holding pending operations in "Operation Object" format */
 			List<Operation> getPendings();
+			
+			
+			/**
+			 * Return an Integer with item count of operations pending to be included at the Blockchain.
+			 * @return Returns an Integer with number of pending operations*/
+			Integer getPendingsCount();
 
 			/**
 			 * Return a JSON Object in "Operation Object" format.
@@ -159,21 +172,31 @@ public interface PascalCoinClient {
 			List<Operation> findNOperations(Integer account, Integer nOperationMin, Integer nOperationMax, Integer startBlock);
 
 			/**
-			 * Changes an account Public key, or name, or type value (at least 1 on 3)
-			 * @param accountTarget: Account being changed
-			 * @param accountSigner: Account paying the fee (must have same public key as account_target)
-			 * @param newEncPubKey: New account public key encoded in hexaDouble format
-			 * @param newB58PubKey: New account public key encoded in base58 format
-			 * @param newName: New account name encoded in PascalCoin64 format (null means keep current name)
-			 * @param newType: New account type (null means keep current type)
-			 * @param fee: PASCURRENCY - Fee of the operation
-			 * @param payload: Payload "item" that will be included in this operation
-			 * @param payloadMethod: Encode type of the item payload
-			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
-			 * Only one or none of new_b58_pubkey, new_enc_pubkey should be used. Populating both will result in an error.
-			 * @return If operation is successfull will return a JSON Object in "Operation Object" format. */
-			Operation changeAccountInfo(Integer accountTarget, Integer accountSigner, String newEncPubKey, String newB58PubKey, String newName, Short newType, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
-
+			* Find accounts by name/type and returns them as an array of Account objects
+			* @param name: If has value, will return the account that match name
+			* @param type: If has value, will return accounts with same type
+			* @param start: Starting account number (by default, 0) 
+			* @param max: Max of accounts returned in array (by default, 100) 
+			* @return list of accounts matching selected criteria
+			* */
+			List<Account> findAccounts(String name, Integer type, Integer start, Integer max);
+			
+			/**
+			 * Find accounts by name/type/forSale/balanceMin/balanceMax and returns them as an array of Account objects
+			 * @param name If has value, will be used to find the account that matches name
+			 * @param exact Used in conjunction with name. By default is set to true. If it's true,will return that matches exactly with name, otherwise will return all Account objects 
+			 * 				whose name starts with name's parameter value
+			 * @param type  If has value, will return accounts with same type
+			 * @param listed By default set to false. If it's set to true, will return only accounts for sale
+			 * @param minBalance If set, will return accounts whose balance is greater or equal than its value
+			 * @param maxBalance If set, will return accounts whose balance is less or equal than its value
+			 * @param start Starting account number (by default, 0) 
+			 * @param max Max of accounts returned in result's array (by default, 100) 
+			 * @return list of accounts matching selected criteria
+			 */
+			List<Account> findAccounts(String name, Boolean exact, Integer type, Boolean listed, Double minBalance, Double maxBalance,
+					Integer start, Integer max);
+			
 			/**
 			 * Executes a transaction operation from "sender" to "target"
 			 * @param sender: Sender account
@@ -260,25 +283,21 @@ public interface PascalCoinClient {
 			Operation buyAccount(Integer buyerAccount, Integer accountToPurchase, Double price, Integer sellerAccount, String newB58PubKey, String newEncPubKey, Double amount, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
 
 			/**
-			 * Signs a "Change Account Info" operation, suitable for cold wallet usage.
-			 * @param accountTarget" Account being changed 
-			 * @param accountSigner: Account paying the fee (must have same public key as account_target) 
-			 * @param newEncPubkey: New account public key encoded in hexaDouble format 
-			 * @param newB58PubKey: New account public key encoded in base58 format 
-			 * @param newName: New account name encoded in PascalCoin64 format (null means keep current name) 
-			 * @param newType: New account type (null means keep current type) 
-			 * @param lastNOperation: Last value of n_operation obtained with an Account object, for example when called to getaccount 
-			 * @param fee: PASCURRENCY - Fee of the operation 
-			 * @param payload: Payload "item" that will be included in this operation 
-			 * @param payloadMethod: Encode type of the item payload 
-			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password 
-			 * @param signerB58PubKey: The current public key of "account_signer" in base58 encoding  
-			 * @param signerEncPubKey: The current public key of "account_signer" in hexaDouble encoding  
-			 * @param rawOperations: HEXASTRING (optional) - If we want to add a sign operation with other previous operations, here we must put previous rawoperations result 
+			 * Changes an account Public key, or name, or type value (at least 1 on 3)
+			 * @param accountTarget: Account being changed
+			 * @param accountSigner: Account paying the fee (must have same public key as account_target)
+			 * @param newEncPubKey: New account public key encoded in hexaDouble format
+			 * @param newB58PubKey: New account public key encoded in base58 format
+			 * @param newName: New account name encoded in PascalCoin64 format (null means keep current name)
+			 * @param newType: New account type (null means keep current type)
+			 * @param fee: PASCURRENCY - Fee of the operation
+			 * @param payload: Payload "item" that will be included in this operation
+			 * @param payloadMethod: Encode type of the item payload
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
 			 * Only one or none of new_b58_pubkey, new_enc_pubkey should be used. Populating both will result in an error.
-			 * @return Returns a Raw Operations Object */
-			Operation signChangeAccountInfo(Integer accountTarget, Integer accountSigner, String newEncPubkey, String newB58PubKey, String newName, Short newType, Integer lastNOperation, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, String signerB58PubKey, String signerEncPubKey, String rawOperations);
-
+			 * @return If operation is successfull will return a JSON Object in "Operation Object" format. */
+			Operation changeAccountInfo(Integer accountTarget, Integer accountSigner, String newEncPubKey, String newB58PubKey, String newName, Short newType, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
+			
 			/**
 			 * Creates and signs a "Send to" operation without checking information and without transfering to the network. It's useful for "cold wallets" that are off-line (not synchronized with the network) and only holds private keys
 			 * 	
@@ -381,6 +400,26 @@ public interface PascalCoinClient {
 			 * Only one or none of signer_b58_pubkey, signer_b58_pubkey should be used. Populating both will result in an error.
 			 * @return Returns a Raw Operations Object */
 			RawOperation signBuyAccount(Integer buyerAccount, Integer accountToPurchase, Double price, Integer sellerAccount, String newB58PubKey, String newEncPubKey, Double amount, Integer lastNOperation, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, String signerB58PubKey, String signerEncPubKey, String rawOperations);
+			
+			/**
+			 * Signs a "Change Account Info" operation, suitable for cold wallet usage.
+			 * @param accountTarget" Account being changed 
+			 * @param accountSigner: Account paying the fee (must have same public key as account_target) 
+			 * @param newEncPubkey: New account public key encoded in hexaDouble format 
+			 * @param newB58PubKey: New account public key encoded in base58 format 
+			 * @param newName: New account name encoded in PascalCoin64 format (null means keep current name) 
+			 * @param newType: New account type (null means keep current type) 
+			 * @param lastNOperation: Last value of n_operation obtained with an Account object, for example when called to getaccount 
+			 * @param fee: PASCURRENCY - Fee of the operation 
+			 * @param payload: Payload "item" that will be included in this operation 
+			 * @param payloadMethod: Encode type of the item payload 
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password 
+			 * @param signerB58PubKey: The current public key of "account_signer" in base58 encoding  
+			 * @param signerEncPubKey: The current public key of "account_signer" in hexaDouble encoding  
+			 * @param rawOperations: HEXASTRING (optional) - If we want to add a sign operation with other previous operations, here we must put previous rawoperations result 
+			 * Only one or none of new_b58_pubkey, new_enc_pubkey should be used. Populating both will result in an error.
+			 * @return Returns a Raw Operations Object */
+			Operation signChangeAccountInfo(Integer accountTarget, Integer accountSigner, String newEncPubkey, String newB58PubKey, String newName, Short newType, Integer lastNOperation, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, String signerB58PubKey, String signerEncPubKey, String rawOperations);
 
 			/**
 			 * Returns information stored in a rawoperations param (obtained calling signchangekey or signsendto)
@@ -490,5 +529,68 @@ public interface PascalCoinClient {
 		     * "md160hash" : HEXASTRING with MD160 hash
 			 */
 			DecodeOpHashResult decodeOpHash(String ophash);
+
+			/**
+			 * Signs a digest message using a public key
+			 * @param digest: HEXASTRING with the message to sign
+			 * @param encPubKey: Public key in encoded format
+			 * @param b58PubKey: Public key in b58 format 
+			 * @return SignResult object: { digest : HEXASTRING with the message to sign-enc_pubkey : HEXASTRING with the public key that used to sign "digest" data- signature : HEXASTRING with signature}
+			 */
+			SignResult signMessage(String digest, String encPubKey, String b58PubKey);
+
+			/**
+			 * Verify if a digest message is signed by a public key
+			 * @param digest: HEXASTRING with the message to sign
+			 * @param encPubKey: Public key in encoded format
+			 * @param signature: Signature generated by signMessage function
+			 * @return SignResult object: { digest : HEXASTRING with the message to sign-enc_pubkey : HEXASTRING with the public key that used to sign "digest" data- signature : HEXASTRING with signature}
+			 */
+			SignResult verifySign(String digest, String encPubKey, String signature);
+			
+			/**
+			 * Calculates valid checksum from the given account
+			 * @param account Integer account
+			 * @return String the corresponding checksum
+			 */
+			Integer calculateChecksum(Integer account);
+
+			/**
+			 * Adds operations to a multioperation (or creates a new multioperation and adds new operations)
+			 * @param rawoperations: Previous operations
+			 * @param autoNOperation:  Will fill n_operation (if not provided). Only valid if wallet is ONLINE (no cold wallets)
+			 * @param senders: ARRAY of objects that will be Senders of the multioperation 
+			 * @param receivers: ARRAY of objects that will be Receivers of the multioperation 
+			 * @param changers: ARRAY of objects that will be accounts executing a changing info 
+			 * @return MultiOperation Object, if everything was fine
+			 */
+			MultiOperation multiOperationAddOperation(String rawoperations, Boolean autoNOperation,
+					List<OpSender> senders, List<OpReceiver> receivers, List<OpChanger> changers);
+
+			/**
+			 * This method will sign a Multioperation found in a "rawoperations", must provide all n_operation info of each signer because can work in cold wallets
+			 * @param rawoperations: HEXASTRING with 1 multioperation in Raw format
+			 * @param signers: ARRAY of AccountKey objects with info about accounts and public keys to sign 
+			 * @return If success will return a "MultiOperation Object"
+			 */
+			MultiOperation multiOperationSignOffline(String rawoperations, List<AccountKey> signers);
+			
+			/**
+			 * This method will sign a Multioperation found in a "rawoperations" based on current safebox state public keys
+			 * @param rawoperations: HEXASTRING with 1 multioperation in Raw format
+			 * @return If success will return a "MultiOperation Object"
+			 */
+			MultiOperation multiOperationSignOnline(String rawoperations);
+			
+			/**
+			 * This method will sign a Multioperation found in a "rawoperations" based on current safebox state public keys
+			 * @param rawoperations: HEXASTRING with 1 multioperation in Raw format
+			 * @param index: Index of the operation to remove
+			 * @return If success will return a "MultiOperation Object"
+			 */
+			MultiOperation multiOperationDeleteOperation(String rawoperations,Integer index);
+
+			
+
 			
 }

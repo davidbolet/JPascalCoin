@@ -3,7 +3,7 @@
   <groupId>com.github.davidbolet.jpascalcoin</groupId>
   <artifactId>jPascalcoin</artifactId>
   <name>jPascalcoin</name>
-  <version>2.1.10-SNAPSHOT</version>
+  <version>3.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <url>https://github.com/davidbolet/JPascalCoin</url>
   <description>JPascalCoin is a Java library for PascalCoin. Currently only the JSON-RPC API is supported. 

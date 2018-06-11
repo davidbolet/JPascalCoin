@@ -10,17 +10,23 @@ import java.util.logging.Logger;
 import com.github.davidbolet.jpascalcoin.api.constants.PascalCoinConstants;
 import com.github.davidbolet.jpascalcoin.api.helpers.Byte2HexHelper;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
+import com.github.davidbolet.jpascalcoin.api.model.AccountKey;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
 import com.github.davidbolet.jpascalcoin.api.model.Connection;
 import com.github.davidbolet.jpascalcoin.api.model.DecodeOpHashResult;
 import com.github.davidbolet.jpascalcoin.api.model.DecryptedPayload;
 import com.github.davidbolet.jpascalcoin.api.model.KeyType;
+import com.github.davidbolet.jpascalcoin.api.model.MultiOperation;
 import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
+import com.github.davidbolet.jpascalcoin.api.model.OpChanger;
+import com.github.davidbolet.jpascalcoin.api.model.OpReceiver;
 import com.github.davidbolet.jpascalcoin.api.model.OpResult;
+import com.github.davidbolet.jpascalcoin.api.model.OpSender;
 import com.github.davidbolet.jpascalcoin.api.model.Operation;
 import com.github.davidbolet.jpascalcoin.api.model.PayLoadEncryptionMethod;
 import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
+import com.github.davidbolet.jpascalcoin.api.model.SignResult;
 import com.github.davidbolet.jpascalcoin.api.services.PascalCoinService;
 
 import okhttp3.OkHttpClient;
@@ -110,7 +116,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -134,7 +140,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -164,7 +170,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -172,6 +178,45 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public List<Account> findAccounts(String name, Boolean exact, Integer type, Boolean listed, Double minBalance, Double maxBalance, Integer start, Integer max) {
+		List<Account> result = null;
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","findaccounts");
+		if (name!=null && !"".equals(name))
+			params.put("name", name);
+		if (listed!=null)
+			params.put("listed", listed);
+		if (exact!=null)
+			params.put("exact", exact);
+		if (minBalance!=null)
+			params.put("min_balance", minBalance);
+		if (maxBalance!=null)
+			params.put("max_balance", maxBalance);
+		if (type!=null)
+			params.put("type", type);		
+		if (start!=null)
+			params.put("start", start);
+		if (max!=null)
+			params.put("max", max);
+		body.put("params",params);
+		Call<OpResult<List<Account>>> findAccountsCall= pascalCoinService.findAccounts(body);
+		try {
+			Response<OpResult<List<Account>>> response = findAccountsCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+	
 	
 //	public Integer findAccountsCount(String name, Integer type , Integer status)
 //	{
@@ -222,7 +267,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -248,7 +293,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -274,7 +319,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -300,7 +345,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -326,7 +371,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -350,7 +395,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -380,7 +425,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -403,7 +448,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -429,7 +474,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -458,7 +503,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -469,6 +514,11 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 
 	@Override
 	public List<Operation> getAccountOperations(Integer account, Integer depth, Integer start, Integer max) {
+		return getAccountOperations( account, 0,  depth,  start,  max);
+	}
+	
+	@Override
+	public List<Operation> getAccountOperations(Integer account, Integer startblock, Integer depth, Integer start, Integer max) {
 		List<Operation> result = null;
 		Map<String,Object> body = getRPCBody();
 		Map<String,Object> params = new HashMap<>();
@@ -476,6 +526,8 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (account==null)
 			throw new IllegalArgumentException("Account param is mandatory");
 		params.put("account", account);
+		if (startblock!=null)
+			params.put("startblock", startblock);
 		if (depth!=null)
 			params.put("depth", depth);
 		if (start!=null)
@@ -489,7 +541,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -511,7 +563,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -519,6 +571,29 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public Integer getPendingsCount() {
+		Integer result = 0;
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getpendingscount");
+		body.put("params",params);
+		Call<OpResult<Integer>> pendingOperationsCall= pascalCoinService.getPendingsCount(body);
+		try {
+			Response<OpResult<Integer>> response = pendingOperationsCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+	
 
 	@Override
 	public Operation findOperation(String ophash) {
@@ -537,7 +612,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -566,7 +641,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -601,7 +676,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -627,7 +702,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -672,7 +747,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -707,7 +782,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -747,7 +822,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -785,7 +860,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -829,7 +904,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -863,7 +938,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -910,7 +985,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -960,7 +1035,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1009,7 +1084,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1058,7 +1133,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1112,7 +1187,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1156,7 +1231,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1214,7 +1289,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1239,7 +1314,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1264,7 +1339,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1286,7 +1361,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1312,7 +1387,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1338,7 +1413,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1385,7 +1460,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1411,7 +1486,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1433,7 +1508,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 			
@@ -1459,7 +1534,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1481,7 +1556,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1504,7 +1579,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1527,7 +1602,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1549,7 +1624,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1571,7 +1646,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			if (response.body().isError())
 			{
 				logger.log(Level.SEVERE, response.body().getErrorMessage());
-				throw new RuntimeException(response.body().getErrorMessage());
+				throw response.body().getError();
 			}
 			result = response.body().getResult();
 		} catch (IOException e) {
@@ -1580,5 +1655,186 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		return result;
 	}
 
+	@Override
+	public SignResult signMessage(String digest, String encPubKey, String b58PubKey) {
+		SignResult result = null;
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		if (digest==null|| (encPubKey==null && b58PubKey==null))
+			throw new IllegalArgumentException("Missing mandatory params. You have to specify digest, and one of encPubKey or b58PubKey");
+		body.put("method","signmessage");
+		if (encPubKey!=null)
+			params.put("enc_pubkey", encPubKey);
+		if (b58PubKey!=null)
+			params.put("b58_pubkey", b58PubKey);
+		if (digest!=null)
+			params.put("digest", digest);
+		body.put("params",params);
+		Call<OpResult<SignResult>> decodePubKeyCall= pascalCoinService.signMessage(body);
+		try {
+			Response<OpResult<SignResult>> response = decodePubKeyCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+
+	@Override
+	public SignResult verifySign(String digest, String encPubKey, String signature) {
+		SignResult result = null;
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		if (digest==null|| encPubKey==null || signature==null)
+			throw new IllegalArgumentException("Missing mandatory params. You have to specify digest, encPubKey and signature");
+		body.put("method","verifysign");
+		if (encPubKey!=null)
+			params.put("enc_pubkey", encPubKey);
+		if (signature!=null)
+			params.put("signature", signature);
+		if (digest!=null)
+			params.put("digest", digest);
+		body.put("params",params);
+		Call<OpResult<SignResult>> decodePubKeyCall= pascalCoinService.verifySign(body);
+		try {
+			Response<OpResult<SignResult>> response = decodePubKeyCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+
+	@Override
+	public MultiOperation multiOperationAddOperation(String rawoperations, Boolean autoNOperation,
+			List<OpSender> senders, List<OpReceiver> receivers, List<OpChanger> changers) {
+		MultiOperation result = null;
+		if (senders==null||receivers==null||changers==null)
+			throw new IllegalArgumentException("Missing mandatory params. senders,receivers and changers are mandatory");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","multioperationaddoperation");
+		if (rawoperations!=null)
+			params.put("rawoperations", rawoperations);
+		if (autoNOperation!=null)
+			params.put("auto_n_operation", autoNOperation);
+		
+		params.put("senders", senders);
+		params.put("receivers", receivers);
+		params.put("changesinfo", changers);
+		
+		body.put("params",params);
+		Call<OpResult<MultiOperation>> multiOperationAddCall= pascalCoinService.multiOperationAddOperation(body);
+		try {
+			Response<OpResult<MultiOperation>> response = multiOperationAddCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+
+	@Override
+	public MultiOperation multiOperationSignOffline(String rawoperations, List<AccountKey> signers) {
+		MultiOperation result = null;
+		if (rawoperations==null||signers==null||signers.size()==0)
+			throw new IllegalArgumentException("Missing mandatory params. rawoperations and signers are mandatory parameters");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","multioperationsignoffline");
+		
+		params.put("rawoperations", rawoperations);
+		params.put("accounts_and_keys", signers);
+		
+		body.put("params",params);
+		Call<OpResult<MultiOperation>> multiOperationSignOfflineCall= pascalCoinService.multiOperationSignOffline(body);
+		try {
+			Response<OpResult<MultiOperation>> response = multiOperationSignOfflineCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+	
+	@Override
+	public MultiOperation multiOperationSignOnline(String rawoperations) {
+		MultiOperation result = null;
+		if (rawoperations==null)
+			throw new IllegalArgumentException("Missing mandatory params. rawoperations is a mandatory parameter");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","multioperationsignonline");
+		
+		params.put("rawoperations", rawoperations);
+		
+		body.put("params",params);
+		Call<OpResult<MultiOperation>> multiOperationSignOnlineCall= pascalCoinService.multiOperationSignOnline(body);
+		try {
+			Response<OpResult<MultiOperation>> response = multiOperationSignOnlineCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+	
+	public MultiOperation multiOperationDeleteOperation(String rawoperations,Integer index) {
+		MultiOperation result = null;
+		if (rawoperations==null)
+			throw new IllegalArgumentException("Missing mandatory params. rawoperations is a mandatory parameter");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","operationsdelete");
+		
+		params.put("rawoperations", rawoperations);
+		params.put("index", index);
+		
+		body.put("params",params);
+		Call<OpResult<MultiOperation>> multiOperationDeleteCall= pascalCoinService.multiOperationDeleteOperation(body);
+		try {
+			Response<OpResult<MultiOperation>> response = multiOperationDeleteCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;		
+	}
+	
+	@Override
+	public Integer calculateChecksum(Integer account) {
+		return (((account) * 101) % 89) + 10;
+	}
+	
 
 }

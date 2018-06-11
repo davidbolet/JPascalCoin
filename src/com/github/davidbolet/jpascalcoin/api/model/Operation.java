@@ -1,18 +1,43 @@
 package com.github.davidbolet.jpascalcoin.api.model;
 
-//import com.github.davidbolet.jpascalcoin.api.helpers.HexBinaryConverter;
-//import com.google.gson.annotations.JsonAdapter;
+import java.io.Serializable;
+import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.Serializable;
-
+/**
+ * Operation Object, modified on version 3.0
+ * @author davidbolet
+ *
+ */
 public class Operation implements Serializable {
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * ARRAY of objects - When is a transaction, this array contains each sender 
+	 */
+	@SerializedName("senders")
+	@Expose
+	List<OpSender> senders;
+	
+	/**
+	 * ARRAY of objects - When is a transaction, this array contains each receiver 
+	 */
+	@SerializedName("receivers")
+	@Expose
+	List<OpReceiver> receivers;
+	
+	/**
+	 * "changers" : ARRAY of objects - When accounts changed state 
+	 */
+	@SerializedName("changers")
+	@Expose
+	List<OpChanger> changers;
 	
 	/**
 	 * n_operation param, added in version 2.1.6
@@ -28,7 +53,6 @@ public class Operation implements Serializable {
 	@SerializedName("ophash")
 	@Expose
 	protected String opHash;
-
 
 	/** 
 	 * If operation is invalid, value=false  (optional)
@@ -124,7 +148,7 @@ public class Operation implements Serializable {
 	protected Double balance;
 
 	/** 
-	 * Sender account in a transaction (optype = 1)
+	 * Sender account in a single transaction (optype = 1)
 	*/
 	@SerializedName("sender_account")
 	@Expose
@@ -157,7 +181,6 @@ public class Operation implements Serializable {
 	*/
 	@SerializedName("payload")
 	@Expose
-	//@JsonAdapter(HexBinaryConverter.class)
 	protected String payLoad;
 
 	/** 
@@ -334,4 +357,37 @@ public class Operation implements Serializable {
 	public void setV1Ophash(String v1Ophash) {
 		this.v1Ophash = v1Ophash;
 	}
+
+	public List<OpSender> getSenders() {
+		return senders;
+	}
+
+	public void setSenders(List<OpSender> senders) {
+		this.senders = senders;
+	}
+
+	public List<OpReceiver> getReceivers() {
+		return receivers;
+	}
+
+	public void setReceivers(List<OpReceiver> receivers) {
+		this.receivers = receivers;
+	}
+
+	public List<OpChanger> getChangers() {
+		return changers;
+	}
+
+	public void setChangers(List<OpChanger> changers) {
+		this.changers = changers;
+	}
+
+	public Integer getnOperation() {
+		return nOperation;
+	}
+
+	public void setnOperation(Integer nOperation) {
+		this.nOperation = nOperation;
+	}
+	
 }
