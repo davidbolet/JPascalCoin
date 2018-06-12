@@ -33,6 +33,12 @@ import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
 import com.github.davidbolet.jpascalcoin.api.model.SignResult;
 
+/**
+ * Basic tests that show how client work
+ * 
+ * @author davidbolet
+ *
+ */
 public class PascalCoinClientTest {
 	PascalCoinClient client;
 	String encPubKey,b58PubKey, b58PubKeyOtherWallet;
@@ -106,7 +112,7 @@ public class PascalCoinClientTest {
 	}
 	
 	/**
-	 * Tests listAccounts function
+	 * Tests listAccounts function 
 	 */
 	@Test
 	public void testListAccounts()
@@ -121,7 +127,7 @@ public class PascalCoinClientTest {
 	}
 
 	/**
-	 * Tests findAccounts function
+	 * Tests findAccounts function --> with modifications introduced on v3.0.2
 	 */
 	@Test
 	public void testFindAccounts()
@@ -259,15 +265,14 @@ public class PascalCoinClientTest {
 		List<Operation> operations = client.getPendings();
 		for(Operation op: operations)
 		{
-			System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
+			System.out.println(String.format("Operation V2 fields: OpHash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
 		}
 		assertTrue(operations!=null);
 	}	
-	
 
 	
 	/**
-	 * Tests findOperation
+	 * Tests findNOperation
 	 */
 	@Test
 	public void testFindNOperation()
@@ -278,7 +283,7 @@ public class PascalCoinClientTest {
 	}
 	
 	/**
-	 * Tests findOperation
+	 * Tests findNOperations
 	 */
 	@Test
 	public void testFindNOperations()
@@ -303,7 +308,7 @@ public class PascalCoinClientTest {
 		
 		Operation op2= client.findOperation("27410300DBD1050011000000FC4973EF2F9DA398B8778CA0B672AC3470F508EE");
 		System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
-		assertTrue(op!=null);
+		assertTrue(op2!=null);
 	}
 	
 	/**
@@ -401,6 +406,9 @@ public class PascalCoinClientTest {
 		assertTrue(op!=null);
 	}		
 	
+	/**
+	 * Another test for buyaccount
+	 */
 	@Test
 	public void testBuyAccount2() {
 		Account account = client.getAccount(accountId);
@@ -445,7 +453,7 @@ public class PascalCoinClientTest {
 	}
 	
 	/**
-	 * Tests findOperation
+	 * Tests signMessage and verifySign
 	 */
 	@Test
 	public void testSignAndVerifySign()
@@ -578,7 +586,7 @@ public class PascalCoinClientTest {
 	public void multiOpAddTest() {
 		
 		String senderB8PubKey="3GhhbouPE7mf5rVxu7rm8f2dEczavgmeZXoxU5Z1QtraVQwurYBgmRS2Q5F49VyVn5yDpQV87a6VTTFiKAF6bDbmeDb2MDxLxUT616";
-		String receiverB58PubKey="3GhhbopiJkQFZYUJ2vAYMmBJj2hWybSLJjkHEvqPjpdaDKGG8S5CvCzvYVbs9azzvSEtFDpvvZxftvB5dgGnDunvA64oq9HqfskigY";
+		//String receiverB58PubKey="3GhhbopiJkQFZYUJ2vAYMmBJj2hWybSLJjkHEvqPjpdaDKGG8S5CvCzvYVbs9azzvSEtFDpvvZxftvB5dgGnDunvA64oq9HqfskigY";
 				
 		Account senderAccount = client.getAccount(381403);
 		
@@ -613,7 +621,7 @@ public class PascalCoinClientTest {
 		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
 		receivers.add(op2);
 		List<OpChanger> changers = new ArrayList<OpChanger>();
-		//changers.add(op3);
+
 		MultiOperation res = client.multiOperationAddOperation(null, true, senders, receivers, changers);
 		
 		assertTrue(res!=null);
@@ -645,7 +653,7 @@ public class PascalCoinClientTest {
 		assertTrue(res5!=null);
 		System.out.println(String.format("Not signed: %d, Signed: %d, Fee: %.4f PASC, Amount:  %.4f PASC, Can Execute:%b", res5.getNotSignedCount(),res5.getSignedCount(), res5.getFee(), res5.getAmount(), res5.getSignedCanExecute()));
 
-		
+//		Uncomment if you want to execute, if so - comment deleteoperation	
 //		List<Operation> operations=client.executeOperations(res4.getRawOperations());
 //		for(Operation op: operations)
 //		{
