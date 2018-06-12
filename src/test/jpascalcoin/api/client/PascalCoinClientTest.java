@@ -127,7 +127,7 @@ public class PascalCoinClientTest {
 	}
 
 	/**
-	 * Tests findAccounts function --> with modifications introduced on v3.0.2
+	 * Tests findAccounts function with modifications introduced on v3.0.2
 	 */
 	@Test
 	public void testFindAccounts()
