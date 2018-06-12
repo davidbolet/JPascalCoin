@@ -300,6 +300,10 @@ public class PascalCoinClientTest {
 		Operation op = client.findOperation("394E02007DD105000500000026E34749214D52765404EA230640210149FC43BB");
 		System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
 		assertTrue(op!=null);
+		
+		Operation op2= client.findOperation("27410300DBD1050011000000FC4973EF2F9DA398B8778CA0B672AC3470F508EE");
+		System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
+		assertTrue(op!=null);
 	}
 	
 	/**
