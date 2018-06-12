@@ -6,17 +6,35 @@ Uses both google gson library for json deserialization and retrofit for rest cal
 For logging uses java.util.logging, as it works by default on both Android and pure Java.
 Junit tests are included.
 
-Last changes (version 2.1.9)
+Last version (3.0.1)
+This version is aligned with wallet version 3.0.1, plus changes on findaccounts introduced by this author ;)
+* Updated entity Operation as specified on [Pascalcoin repo](https://github.com/PascalCoin/PascalCoin)
+* Created new entities "MultiOperation", "OpSender", "OpReceiver" and "OpChanger"
+* Added "startblock" as an optional parameter to getaccountoperations 
+* Now when there is an error, a RPCApiException is thrown, instead of a raw RuntimeException
+* Added following params to findaccounts:
+
+    new boolean parameter 'listed' (by default false): If true, filters returning only accounts for sale
+
+    new boolean parameter 'exact' (by default true): If false, includes all accounts whose name starts by the value of 'name' parameter. If true returns exact match (as in the actual version)
+
+    new double parameter 'min_balance' (by default -1). If >0, filters accounts with balance greater or equal that its value
+
+    new double parameter 'max_balance' (by default -1). If >0, filters accounts with balance less or equal than its value
+
+
+Changes on version 2.1.9
+* Added new optional parameter logLevel on constructor PascalCoinClientImpl(String server, Short port, Integer log). 0 -> No log (default value) 1-Log json requests 2-More verbose log 
 * Fixed bug with payloadEncrypt function, added correct parameters
 * Added some missing error-handling in several methods
 * Changed signature of field 'payload' on Operation class, now it's a string to avoid some issues with Base64 encoding/decoding
 
-Last changes (version 2.1.8)
+Changes on version 2.1.8
 * Fixed bug with buyaccount and signbuyaccount functions
 * Added message trace options to server calls
 * removed ignored params start and max on getAccountsCount funcion
 
-Version version 1.0.3 was upgraded to 2.1.6, in order to keep alignment with PascalCoin Wallet. Previous version was 1.0.2,
+Version version 1.0.3 was renamed to 2.1.6, in order to keep alignment with PascalCoin Wallet. Previous version was 1.0.2,
 which works with wallet 2.1.3. Warning: version 2.1.6 fails with wallet 2.1.3 as new functions have been added. 
 However, version 1.0.2 still works fine with wallet 2.1.6
 
