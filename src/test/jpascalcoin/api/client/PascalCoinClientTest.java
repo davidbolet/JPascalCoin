@@ -13,7 +13,7 @@ import org.junit.Test;
 import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClient;
 import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClientImpl;
 import com.github.davidbolet.jpascalcoin.api.constants.PascalCoinConstants;
-import com.github.davidbolet.jpascalcoin.api.helpers.Byte2HexHelper;
+import com.github.davidbolet.jpascalcoin.api.helpers.HexConversionsHelper;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
 import com.github.davidbolet.jpascalcoin.api.model.AccountKey;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
@@ -28,10 +28,12 @@ import com.github.davidbolet.jpascalcoin.api.model.OpChanger;
 import com.github.davidbolet.jpascalcoin.api.model.OpReceiver;
 import com.github.davidbolet.jpascalcoin.api.model.OpSender;
 import com.github.davidbolet.jpascalcoin.api.model.Operation;
+import com.github.davidbolet.jpascalcoin.api.model.PascPrivateKey;
 import com.github.davidbolet.jpascalcoin.api.model.PayLoadEncryptionMethod;
 import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
 import com.github.davidbolet.jpascalcoin.api.model.SignResult;
+import com.github.davidbolet.jpascalcoin.exception.UsupportedKeyTypeException;
 
 /**
  * Basic tests that show how client work
@@ -460,8 +462,8 @@ public class PascalCoinClientTest {
 	public void testSignAndVerifySign()
 	{
 		String toSign="This is the text that will be signed";
-		String hex=Byte2HexHelper.byteToHex(toSign.getBytes());
-		String hex2=Byte2HexHelper.byteToHex("Tengo una vaca lechera, no es una vaca cualquiera".getBytes());
+		String hex=HexConversionsHelper.byteToHex(toSign.getBytes());
+		String hex2=HexConversionsHelper.byteToHex("Tengo una vaca lechera, no es una vaca cualquiera".getBytes());
 		SignResult res= client.signMessage(hex, encPubKey, null);
 		assertTrue(res!=null);
 		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
@@ -598,7 +600,7 @@ public class PascalCoinClientTest {
 //		
 //		String rawoperations= "0100000001000000DBD1050011000000DAEE0100C8000000000000000000000000000000200053616C7465645F5F961DD005C65FA70C3F3DEE063C411083CF03314A69803E2900000000000020001F72ABDF23C6AD4C41A86A1D35E0FE443DA5BF3B00A097F7C553BA3B875863092000021D8D5F45E6AAC5A8EEF373A347E8686872BD319DF5096A95A4FC6E535F92BE";
 		String payload1="This Payload from sender1";
-		String payload1Hex=Byte2HexHelper.byteToHex(payload1.getBytes());
+		String payload1Hex=HexConversionsHelper.byteToHex(payload1.getBytes());
 		OpSender op1=new OpSender();
 		op1.setAccount(381403);
 		op1.setAmount(0.2);
@@ -606,7 +608,7 @@ public class PascalCoinClientTest {
 		op1.setPayLoad(payload1Hex);
 		
 		String payload2="This Payload to receiver";
-		String payload2Hex=Byte2HexHelper.byteToHex(payload2.getBytes());
+		String payload2Hex=HexConversionsHelper.byteToHex(payload2.getBytes());
 		OpReceiver op2=new OpReceiver();
 		op2.setAccount(126682);
 		op2.setAmount(0.2);
@@ -688,6 +690,18 @@ public class PascalCoinClientTest {
 		assertEquals(result, Boolean.TRUE);
 	}
 	
-	
+	/**
+	 * Test key generation. To check the result with the wallet, import the generated private key and check Base58PubKey
+	 * @throws UsupportedKeyTypeException
+	 */
+	@Test
+	public void testGeneratePrivateKey() throws UsupportedKeyTypeException {
+		//System.out.println(HexConversionsHelper.int2BigEndianHex(32));
+		//System.out.println(HexConversionsHelper.int2BigEndianHex(KeyType.SECP256K1.getValue()));
+		PascPrivateKey key = PascPrivateKey.generate(KeyType.SECP256K1,"test");
+		System.out.println("private key: "+key.getPrivateKey());
+		System.out.println("encPubKey: "+key.getPublicKey().getEncPubKey());
+		System.out.println("Base58PubKey: "+key.getPublicKey().getBase58PubKey());
+	}
 	
 }

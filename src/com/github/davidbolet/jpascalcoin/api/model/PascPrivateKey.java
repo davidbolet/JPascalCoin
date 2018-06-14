@@ -3,6 +3,7 @@ package com.github.davidbolet.jpascalcoin.api.model;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -11,6 +12,8 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECPoint;
 
+import com.github.davidbolet.jpascalcoin.api.helpers.Base58;
+import com.github.davidbolet.jpascalcoin.api.helpers.HexConversionsHelper;
 import com.github.davidbolet.jpascalcoin.exception.UsupportedKeyTypeException;
 
 /**
@@ -21,8 +24,10 @@ import com.github.davidbolet.jpascalcoin.exception.UsupportedKeyTypeException;
  */
 public class PascPrivateKey {
 	
-	String privateKey;
-	com.github.davidbolet.jpascalcoin.api.model.PublicKey publicKey;
+	public static final String B58_PUBKEY_PREFIX="01";
+	
+	private String privateKey;
+	private com.github.davidbolet.jpascalcoin.api.model.PublicKey publicKey;
 	
 	public String getPrivateKey() {
 		return privateKey;
@@ -63,15 +68,26 @@ public class PascPrivateKey {
 			ECPoint pt = epub.getW();
 			String sx = adjustTo64(pt.getAffineX().toString(16)).toUpperCase();
 			String sy = adjustTo64(pt.getAffineY().toString(16)).toUpperCase();
-			
-			String bcPub = "01CA022000" + sx + "2000"+sy;
+			//We must divide by 2 as charset is Unicode, while Pasc uses AnsiString 
+			String bcPub = HexConversionsHelper.int2BigEndianHex(KeyType.SECP256K1.getValue())+HexConversionsHelper.int2BigEndianHex(sx.length()/2) + sx + HexConversionsHelper.int2BigEndianHex(sy.length()/2)+sy;
 			com.github.davidbolet.jpascalcoin.api.model.PublicKey pk=new com.github.davidbolet.jpascalcoin.api.model.PublicKey();
 			pk.setX(sx);
 			pk.setY(sy);
 			pk.setName(name);
 			pk.setEncPubKey(bcPub);
-			pk.setCanUse(false); //the wallet doesn't have the private key, as we only have it 
-			//System.out.println("bcPub: " + bcPub);
+			pk.setCanUse(true); //However, the wallet doesn't have the private key, as we only have it 
+			
+			//Now we must calculate Base58PubKey
+			MessageDigest sha = MessageDigest.getInstance("SHA-256");
+			byte[] s1 = sha.digest(HexConversionsHelper.decodeStr2Hex(bcPub));
+			String shaTxt=HexConversionsHelper.byteToHex(s1).toUpperCase();
+			System.out.println("  sha: " + shaTxt);
+			
+			//set AUX = SHA256( ENC_PUBKEY ) set NEW_RAW = '01' + AUX (as hexadecimal) + Copy(AUX, 1, 4) (as hexadecmial)
+			String base58PubKeyPre= B58_PUBKEY_PREFIX+bcPub+shaTxt.substring(0, 8);
+			System.out.println("pre "+base58PubKeyPre);
+			String base58PubKey = Base58.encode(HexConversionsHelper.decodeStr2Hex(base58PubKeyPre));
+			pk.setBase58PubKey(base58PubKey);
 			result.setPublicKey(pk);
 			return result;
 		}
@@ -91,12 +107,5 @@ public class PascPrivateKey {
         }
     }
 	
-	public static String byteToHex(byte[] in) {
-	    final StringBuilder builder = new StringBuilder();
-	    for(byte b : in) {
-	        builder.append(String.format("%02x", b));
-	    }
-	    return builder.toString();
-	}
 
 }

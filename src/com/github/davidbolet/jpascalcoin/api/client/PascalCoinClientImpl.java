@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.github.davidbolet.jpascalcoin.api.constants.PascalCoinConstants;
-import com.github.davidbolet.jpascalcoin.api.helpers.Byte2HexHelper;
+import com.github.davidbolet.jpascalcoin.api.helpers.HexConversionsHelper;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
 import com.github.davidbolet.jpascalcoin.api.model.AccountKey;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
@@ -836,7 +836,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("new_type", new_type);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -871,7 +871,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("amount", amount);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod.getValue());	
 		if (pwd!=null)
@@ -911,7 +911,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("account_signer", account_signer);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload",Byte2HexHelper.byteToHex(payload));		
+			params.put("payload",HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -949,7 +949,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("accounts", accounts);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -993,7 +993,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("seller_account", sellerAccount);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1027,7 +1027,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("account_signer", accountSigner);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1074,7 +1074,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("amount", amount);	
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1124,7 +1124,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("new_type", newType);
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1173,7 +1173,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (rawoperations!=null && !"".equals(rawoperations))
 			params.put("rawoperations", rawoperations);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1222,7 +1222,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			params.put("rawoperations", rawOperations);	
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload",Byte2HexHelper.byteToHex(payload));		
+			params.put("payload",HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1274,7 +1274,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("fee", fee);	
 		params.put("last_n_operation", lastNOperation);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1318,7 +1318,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (signerB58PubKey!=null)
 			params.put("signer_b58_pubkey", signerB58PubKey);		
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1376,7 +1376,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		params.put("last_n_operation", lastNOperation);	
 		params.put("fee", fee);	
 		if (payload!=null)
-			params.put("payload", Byte2HexHelper.byteToHex(payload));		
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
 		if (payloadMethod!=null)
 			params.put("payload_method", payloadMethod);	
 		if (pwd!=null)
@@ -1530,7 +1530,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Map<String,Object> body = getRPCBody();
 		Map<String,Object> params = new HashMap<>();
 		body.put("method","payloadencrypt");
-		params.put("payload", Byte2HexHelper.byteToHex(payload.getBytes()));
+		params.put("payload", HexConversionsHelper.byteToHex(payload.getBytes()));
 		if (!"aes".equals(payloadMethod) &&!"pubkey".equals(payloadMethod) && !"none".equals(payloadMethod))
 		{
 			throw new IllegalArgumentException("payloadMethod parameter can be only any of these: 'aes', 'none' or 'pubkey'");
