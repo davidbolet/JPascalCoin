@@ -53,8 +53,8 @@ public class PascalCoinClientTest {
 	public void init()
 	{
 		//String base="localhost";
-		//client = new PascalCoinClientImpl("10.211.55.10",PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT,1);
-		client = new PascalCoinClientImpl("10.211.55.7",PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT,1);
+		client = new PascalCoinClientImpl("10.211.55.10",PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT,1);
+		//client = new PascalCoinClientImpl("10.211.55.7",PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT,1);
 		
 		//b58PubKey ="3GhhbopiJkQFZYUJ2vAYMmBJj2hWybSLJjkHEvqPjpdaDKGG8S5CvCzvYVbs9azzvSEtFDpvvZxftvB5dgGnDunvA64oq9HqfskigY";
 		b58PubKey = "3GhhbouPE7mf5rVxu7rm8f2dEczavgmeZXoxU5Z1QtraVQwurYBgmRS2Q5F49VyVn5yDpQV87a6VTTFiKAF6bDbmeDb2MDxLxUT616";
@@ -389,7 +389,8 @@ public class PascalCoinClientTest {
 	@Test
 	public void testDelistAccountForSale()
 	{
-		Operation op = client.delistAccountForSale(accountId, account2Id, 0.0, "Testing delistAccountForSale".getBytes() , PayLoadEncryptionMethod.AES, "123456");
+		
+		Operation op = client.delistAccountForSale(563108, 563108, 0.0, "Testing delistAccountForSale".getBytes() , PayLoadEncryptionMethod.DEST, null);
 		System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
 		assertTrue(op!=null);
 	}	
@@ -557,6 +558,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testAddNewKey()
 	{	
+		client.unlock("L1L0kio10!");
 		client.unlock(password);
 		PublicKey pk = client.addNewKey(KeyType.SECP256K1, "davidbolet@gmail.com");		
 		System.out.println(String.format("PublicKey b58: %s enc: %s keyType: %s, Name: %s, X=%s, Y=%s", pk.getBase58PubKey(), pk.getEncPubKey(), pk.getKeyType(), pk.getName(), pk.getX(), pk.getY()));
