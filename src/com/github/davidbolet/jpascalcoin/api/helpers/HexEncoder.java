@@ -1,7 +1,11 @@
 package com.github.davidbolet.jpascalcoin.api.helpers;
 import java.io.IOException;
 import java.io.OutputStream;
-
+/**
+ * 
+ * Class obtained from bitcoinj library
+ *
+ */
 public class HexEncoder
     implements Encoder
 {

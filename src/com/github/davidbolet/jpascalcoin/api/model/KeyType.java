@@ -11,7 +11,7 @@ public enum KeyType {
 	SECP384R1(715),
 	
 	@SerializedName("729")
-	SECP283K1(729),
+	SECT283K1(729), 
 	
 	@SerializedName("716")
 	SECP521R1(716);

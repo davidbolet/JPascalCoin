@@ -702,6 +702,13 @@ public class PascalCoinClientTest {
 		System.out.println("private key: "+key.getPrivateKey());
 		System.out.println("encPubKey: "+key.getPublicKey().getEncPubKey());
 		System.out.println("Base58PubKey: "+key.getPublicKey().getBase58PubKey());
+		
+		PublicKey pk2=client.decodePubKey(null, key.getPublicKey().getBase58PubKey());	
+		System.out.println("encPubKey: "+pk2.getEncPubKey());
+		System.out.println("Base58PubKey: "+pk2.getBase58PubKey());
+		
+		assertEquals(pk2.getEncPubKey(),key.getPublicKey().getEncPubKey());
+		assertEquals(pk2.getBase58PubKey(),key.getPublicKey().getBase58PubKey());
 	}
 	
 }
