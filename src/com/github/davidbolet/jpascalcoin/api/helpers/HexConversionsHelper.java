@@ -23,9 +23,9 @@ public class HexConversionsHelper {
 		return res.toUpperCase();
 	}
 
-	 public static byte[] decodeStr2Hex(String data)
-	 {
-		 ByteArrayOutputStream	bOut = new ByteArrayOutputStream();
+	public static byte[] decodeStr2Hex(String data)
+	{
+		ByteArrayOutputStream	bOut = new ByteArrayOutputStream();
 		 HexEncoder encoder= new HexEncoder();
 	     try {
 		     encoder.decode(data, bOut);
@@ -35,7 +35,7 @@ public class HexConversionsHelper {
 			 throw new RuntimeException("exception decoding Hex string: " + e);
 		 }
 		 return bOut.toByteArray();
-	 }
+	}
 	 
 	 
 }

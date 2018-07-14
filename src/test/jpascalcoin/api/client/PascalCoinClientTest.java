@@ -14,6 +14,7 @@ import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClient;
 import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClientImpl;
 import com.github.davidbolet.jpascalcoin.api.constants.PascalCoinConstants;
 import com.github.davidbolet.jpascalcoin.api.helpers.HexConversionsHelper;
+import com.github.davidbolet.jpascalcoin.api.helpers.OpenSslAes;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
 import com.github.davidbolet.jpascalcoin.api.model.AccountKey;
 import com.github.davidbolet.jpascalcoin.api.model.Block;
@@ -698,7 +699,7 @@ public class PascalCoinClientTest {
 	public void testGeneratePrivateKey() throws UsupportedKeyTypeException {
 		//System.out.println(HexConversionsHelper.int2BigEndianHex(32));
 		//System.out.println(HexConversionsHelper.int2BigEndianHex(KeyType.SECP256K1.getValue()));
-		PascPrivateKey key = PascPrivateKey.generate(KeyType.SECP256K1,"test");
+		PascPrivateKey key = PascPrivateKey.generate(KeyType.SECP256K1);
 		System.out.println("private key: "+key.getPrivateKey());
 		System.out.println("encPubKey: "+key.getPublicKey().getEncPubKey());
 		System.out.println("Base58PubKey: "+key.getPublicKey().getBase58PubKey());
@@ -707,6 +708,39 @@ public class PascalCoinClientTest {
 		System.out.println("encPubKey: "+pk2.getEncPubKey());
 		System.out.println("Base58PubKey: "+pk2.getBase58PubKey());
 		
+		assertEquals(pk2.getEncPubKey(),key.getPublicKey().getEncPubKey());
+		assertEquals(pk2.getBase58PubKey(),key.getPublicKey().getBase58PubKey());
+	}
+	
+	/**
+	 * Test key generation. To check the result with the wallet, import the generated private key and check Base58PubKey
+	 * @throws UsupportedKeyTypeException
+	 */
+	@Test
+	public void testImportPrivateKey() throws Exception {
+		//This is a Private Key previously imported on the wallet
+		String privateKey="40B9B7CB6E80C18C64F3B684A013D2338CE6A75D0EBFEA68501A3D8954C34A55";
+		//This is the wallet's export from previous private key with password "12345678" 
+		String pk="53616C7465645F5F3C634E9006322F19C2DD986EF2FC484F2EAE1888DA83755D808DD227F09CE395C1A74F9453BDC01DDEC37F55F110753F5F56E081ABAD2AE9";		
+		
+		//Encryption TEST
+//		String encrypt=OpenSslAes.encrypt("12345678", privateKey);
+//		assertEquals(encrypt,pk);
+		//Decryptiom TEST
+		String decrypt=OpenSslAes.decrypt("12345678", pk);
+		assertEquals(privateKey, decrypt);
+		
+		//Private Key import TEST
+		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey);
+		System.out.println("private key: "+key.getPrivateKey());
+		System.out.println("encPubKey: "+key.getPublicKey().getEncPubKey());
+		System.out.println("Base58PubKey: "+key.getPublicKey().getBase58PubKey());
+		
+		//Noew Test against wallet's results
+		PublicKey pk2=client.decodePubKey(null, key.getPublicKey().getBase58PubKey());	
+		System.out.println("encPubKey: "+pk2.getEncPubKey());
+		System.out.println("Base58PubKey: "+pk2.getBase58PubKey());
+		//Must fit
 		assertEquals(pk2.getEncPubKey(),key.getPublicKey().getEncPubKey());
 		assertEquals(pk2.getBase58PubKey(),key.getPublicKey().getBase58PubKey());
 	}
