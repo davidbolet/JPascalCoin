@@ -720,7 +720,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testImportPrivateKey() throws Exception {
 		
-		String pk1="5DE0CB4CB63B6F9E655D795B4F400EFEA8C9D8331DCA74E48CDF40FFE48F61E5";
+		String pk1="";
 		PascPrivateKey key1 = PascPrivateKey.fromPrivateKey(pk1, KeyType.SECP256K1);
 		System.out.println("private key: "+key1.getPrivateKey());
 		System.out.println("encPubKey: "+key1.getPublicKey().getEncPubKey());
@@ -759,7 +759,7 @@ public class PascalCoinClientTest {
 	
 	@Test
 	public void testUsePrivateKey() throws Exception {
-		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
+		String privateKeyEnc="";
 		String pwd ="password";
 		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
 		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
@@ -994,7 +994,7 @@ public class PascalCoinClientTest {
 	
 	@Test
 	public void testSignatures() {
-		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
+		String privateKeyEnc="";
 		String pwd ="password";
 		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
 		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
