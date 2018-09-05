@@ -73,7 +73,7 @@ public class PascalCoinClientTest {
 		account2Id = 381309; //An account id
 		account3Id = 381403; //An account id
 		account4Id = 381404; //An account id
-		password = "L1L0kio10!"; //Your wallet password
+		password = "*****"; //Your wallet password
 		//Initially unlock wallet,
 		client.unlock(password);
 	}
@@ -562,9 +562,9 @@ public class PascalCoinClientTest {
 	@Test
 	public void testAddNewKey()
 	{	
-		client.unlock("L1L0kio10!");
+		client.unlock("*****");
 		client.unlock(password);
-		PublicKey pk = client.addNewKey(KeyType.SECP256K1, "davidbolet@gmail.com");		
+		PublicKey pk = client.addNewKey(KeyType.SECP256K1, "test");		
 		System.out.println(String.format("PublicKey b58: %s enc: %s keyType: %s, Name: %s, X=%s, Y=%s", pk.getBase58PubKey(), pk.getEncPubKey(), pk.getKeyType(), pk.getName(), pk.getX(), pk.getY()));
 		assertTrue(pk!=null); 
 	}
@@ -760,7 +760,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testUsePrivateKey() throws Exception {
 		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
-		String pwd ="L1L0kio10";
+		String pwd ="password";
 		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
 		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
 		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
@@ -995,7 +995,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testSignatures() {
 		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
-		String pwd ="L1L0kio10";
+		String pwd ="password";
 		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
 		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
 		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
@@ -1062,8 +1062,8 @@ public class PascalCoinClientTest {
 		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
 		List<OpChanger> changers = new ArrayList<OpChanger>();
 		
-		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
-		String pwd ="L1L0kio10";
+		String privateKeyEnc="";
+		String pwd ="password";
 		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
 		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
 		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
