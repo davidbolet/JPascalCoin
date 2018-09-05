@@ -1,7 +1,13 @@
 package com.github.davidbolet.jpascalcoin.api.model;
 
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECPoint;
 
+import com.github.davidbolet.jpascalcoin.api.helpers.Base58;
+import com.github.davidbolet.jpascalcoin.api.helpers.HexConversionsHelper;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -10,6 +16,7 @@ public class PublicKey implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	public static final String B58_PUBKEY_PREFIX="01";
 
 	/**
 	* Human readable name stored at the Wallet for this key
@@ -181,4 +188,69 @@ public class PublicKey implements Serializable {
 		}
 		return true;
 	}
+
+	public static PublicKey fromEncodedPubKey(String bcPub)  {
+		com.github.davidbolet.jpascalcoin.api.model.PublicKey pk=new com.github.davidbolet.jpascalcoin.api.model.PublicKey();
+		String sx,sy;
+		if (bcPub==null || bcPub.length()!=140) throw new IllegalArgumentException("bcPub must be 40 charachters long");
+		if (!bcPub.startsWith(HexConversionsHelper.int2BigEndianHex(KeyType.SECP256K1.getValue())))
+			throw new IllegalArgumentException("Only SECP256K1 keys are supported");
+		sx=bcPub.substring(8,72);
+		sy=bcPub.substring(76);
+		pk.setX(sx);
+		pk.setY(sy);
+		//pk.setName(name);
+		pk.setEncPubKey(bcPub);
+		pk.setCanUse(true); //However, the wallet doesn't have the private key, as we only have it 
+		//Now we must calculate Base58PubKey
+		try {
+			MessageDigest sha = MessageDigest.getInstance("SHA-256");
+			byte[] s1 = sha.digest(HexConversionsHelper.decodeStr2Hex(bcPub));
+			String shaTxt=HexConversionsHelper.byteToHex(s1).toUpperCase();
+			//System.out.println("  sha: " + shaTxt);
+			
+			//set AUX = SHA256( ENC_PUBKEY ) set NEW_RAW = '01' + AUX (as hexadecimal) + Copy(AUX, 1, 4) (as hexadecmial)
+			String base58PubKeyPre= B58_PUBKEY_PREFIX+bcPub+shaTxt.substring(0, 8);
+			//System.out.println("pre "+base58PubKeyPre);
+			String base58PubKey = Base58.encode(HexConversionsHelper.decodeStr2Hex(base58PubKeyPre));
+			pk.setBase58PubKey(base58PubKey);
+		} catch(NoSuchAlgorithmException ne) {}
+		return pk;
+	}
+	
+	 /**
+     * Generates a PascPublicKey object from a given java.security.ECPublicKey object
+     * @param pub java.security.PublicKey to generate Pascalcoin public Key
+     * @return Pascalcoin public key object
+     * @throws NoSuchAlgorithmException
+     */
+    public static com.github.davidbolet.jpascalcoin.api.model.PublicKey fromECPublicKey(ECPublicKey epub) throws NoSuchAlgorithmException {
+        
+    	//ECPublicKey epub = (ECPublicKey)pub;
+		ECPoint pt = epub.getW();
+//		String sx1 = HexConversionsHelper.byteToHex(pt.getAffineX().toByteArray()).toUpperCase(); 
+//		String sy1 = HexConversionsHelper.byteToHex(pt.getAffineY().toByteArray()).toUpperCase();
+		String sx = adjustTo64(pt.getAffineX().toString(16)).toUpperCase();
+		String sy = adjustTo64(pt.getAffineY().toString(16)).toUpperCase();
+		//We must divide by 2 as charset is Unicode, while Pasc uses AnsiString 
+		String bcPub = HexConversionsHelper.int2BigEndianHex(KeyType.SECP256K1.getValue())+HexConversionsHelper.int2BigEndianHex(sx.length()/2) + sx + HexConversionsHelper.int2BigEndianHex(sy.length()/2)+sy;
+		com.github.davidbolet.jpascalcoin.api.model.PublicKey pk=fromEncodedPubKey( bcPub);
+        return pk;
+    }
+    
+    
+    
+    static private String adjustTo64(String s) {
+        switch(s.length()) {
+        case 62: return "00" + s;
+        case 63: return "0" + s;
+        case 64: return s;
+        default:
+            throw new IllegalArgumentException("not a valid key: " + s);
+        }
+    }
+	
+    
+    
+	
 }

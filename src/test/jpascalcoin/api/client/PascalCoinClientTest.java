@@ -29,11 +29,11 @@ import com.github.davidbolet.jpascalcoin.api.model.OpChanger;
 import com.github.davidbolet.jpascalcoin.api.model.OpReceiver;
 import com.github.davidbolet.jpascalcoin.api.model.OpSender;
 import com.github.davidbolet.jpascalcoin.api.model.Operation;
-import com.github.davidbolet.jpascalcoin.api.model.PascPrivateKey;
 import com.github.davidbolet.jpascalcoin.api.model.PayLoadEncryptionMethod;
 import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
 import com.github.davidbolet.jpascalcoin.api.model.SignResult;
+import com.github.davidbolet.jpascalcoin.api.model.internal.PascPrivateKey;
 import com.github.davidbolet.jpascalcoin.exception.UsupportedKeyTypeException;
 
 /**
@@ -73,7 +73,7 @@ public class PascalCoinClientTest {
 		account2Id = 381309; //An account id
 		account3Id = 381403; //An account id
 		account4Id = 381404; //An account id
-		password = "<password>"; //Your wallet password
+		password = "L1L0kio10!"; //Your wallet password
 		//Initially unlock wallet,
 		client.unlock(password);
 	}
@@ -92,7 +92,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testGetAccount()
 	{
-		Account account = client.getAccount(accountId);
+		Account account = client.getAccount(0);
 		System.out.println(String.format("Account %s has name %s and balance %.4f. UpdatedB: %d, Type: %d, State: %s, PrivateSale: %s, Operations %d\n NewEncPubKey: %s, LockedUntilBlock %d,\n EncPubKey %s", account.getAccount(),account.getName(),account.getBalance(), account.getUpdatedB(), account.getType(), account.getState().getValue(), account.getPrivateSale(), account.getnOperation(), account.getNewEncPubkey(), account.getLockedUntilBlock(), account.getEncPubkey()));
 		assertEquals(account.getAccount(), accountId); 
 		account = client.getAccount(account2Id);
@@ -176,7 +176,7 @@ public class PascalCoinClientTest {
 	@Test
 	public void testGetWalletPubKeys()
 	{	
-		List<PublicKey> result = client.getWalletPubKeys(0, 100);
+		List<PublicKey> result = client.getWalletPubKeys(0, -1);
 		System.out.println(String.format("getWalletPubKeys size %d", result.size()));
 		for(PublicKey pk:result)
 		{
@@ -517,6 +517,7 @@ public class PascalCoinClientTest {
 		DecryptedPayload dp =  client.payloadDecrypt(crypted1, new String[] {"123456"});
 		System.out.println(String.format("Password: %s,\noriginal payload %s,\nunencrypted payload %s\nEncoded Pub key %s\nResult %s\nPayload HEX %s", dp.getDecryptPassword(), dp.getOriginalPayload(),dp.getUnencryptedPayload(), dp.getEncodedPubKey(), dp.getResult(), dp.getUnencryptedPayloadHex() ));
 		assertTrue(crypted1!=null);
+		assertEquals(dp.getUnencryptedPayloadHex(), OpenSslAes.decrypt("123456", crypted1));
 		//2-TEST pubkey
 		String crypted2 = client.payloadEncrypt("this is a test", "pubkey", null, null, b58PubKey);
 		System.out.println(String.format("Encrypted text: %s", crypted2));
@@ -601,12 +602,12 @@ public class PascalCoinClientTest {
 //		
 //		String rawoperations= "0100000001000000DBD1050011000000DAEE0100C8000000000000000000000000000000200053616C7465645F5F961DD005C65FA70C3F3DEE063C411083CF03314A69803E2900000000000020001F72ABDF23C6AD4C41A86A1D35E0FE443DA5BF3B00A097F7C553BA3B875863092000021D8D5F45E6AAC5A8EEF373A347E8686872BD319DF5096A95A4FC6E535F92BE";
 		String payload1="This Payload from sender1";
-		String payload1Hex=HexConversionsHelper.byteToHex(payload1.getBytes());
+		//String payload1Hex=HexConversionsHelper.byteToHex(payload1.getBytes());
 		OpSender op1=new OpSender();
 		op1.setAccount(381403);
 		op1.setAmount(0.2);
 		op1.setnOperation(senderAccount.getnOperation()+1);
-		op1.setPayLoad(payload1Hex);
+		//op1.setPayLoad(payload1Hex);
 		
 		String payload2="This Payload to receiver";
 		String payload2Hex=HexConversionsHelper.byteToHex(payload2.getBytes());
@@ -718,6 +719,17 @@ public class PascalCoinClientTest {
 	 */
 	@Test
 	public void testImportPrivateKey() throws Exception {
+		
+		String pk1="5DE0CB4CB63B6F9E655D795B4F400EFEA8C9D8331DCA74E48CDF40FFE48F61E5";
+		PascPrivateKey key1 = PascPrivateKey.fromPrivateKey(pk1, KeyType.SECP256K1);
+		System.out.println("private key: "+key1.getPrivateKey());
+		System.out.println("encPubKey: "+key1.getPublicKey().getEncPubKey());
+		System.out.println("Base58PubKey: "+key1.getPublicKey().getBase58PubKey());
+		
+		String pub1="3GhhbovBWTZfEoHXYMFtGkrmADW3KEgVq7uU4cKeLpqJaDBWPTxEooGb5CooBw1jKwtAzWkGafb4z7Cmuk5kCiTB49rgsHnqdUTsic";
+		PublicKey public1=client.decodePubKey(null, pub1);
+		assertEquals(key1.getPublicKey().getEncPubKey(),public1.getEncPubKey());
+		assertEquals(key1.getPublicKey().getBase58PubKey(),public1.getBase58PubKey());
 		//This is a Private Key previously imported on the wallet
 		String privateKey="40B9B7CB6E80C18C64F3B684A013D2338CE6A75D0EBFEA68501A3D8954C34A55";
 		//This is the wallet's export from previous private key with password "12345678" 
@@ -728,10 +740,10 @@ public class PascalCoinClientTest {
 //		assertEquals(encrypt,pk);
 		//Decryptiom TEST
 		String decrypt=OpenSslAes.decrypt("12345678", pk);
-		assertEquals(privateKey, decrypt);
-		
+		assertEquals(privateKey, decrypt.substring(8));
+		KeyType type=KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(decrypt.substring(0,4)));
 		//Private Key import TEST
-		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey);
+		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey, type);
 		System.out.println("private key: "+key.getPrivateKey());
 		System.out.println("encPubKey: "+key.getPublicKey().getEncPubKey());
 		System.out.println("Base58PubKey: "+key.getPublicKey().getBase58PubKey());
@@ -745,4 +757,339 @@ public class PascalCoinClientTest {
 		assertEquals(pk2.getBase58PubKey(),key.getPublicKey().getBase58PubKey());
 	}
 	
+	@Test
+	public void testUsePrivateKey() throws Exception {
+		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
+		String pwd ="L1L0kio10";
+		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
+		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
+		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
+		assertEquals(key.getPublicKey().getBase58PubKey(),publicKey.getBase58PubKey());
+		PublicKey publicKey2=client.importPubKey("Test2", publicKey.getBase58PubKey());
+		assertEquals(publicKey.getEncPubKey(),publicKey2.getEncPubKey());
+		List<Account> result = client.getWalletAccounts(null, key.getPublicKey().getBase58PubKey(), null, null);
+		for(Account account:result)
+		{
+			System.out.println(String.format("Account %s has name %s and balance %.4f", account.getAccount(),account.getName(),account.getBalance()));
+		}
+		assertTrue(result.size()>0); 
+		
+		Account senderAccount = result.get(0);
+		OpSender op1=new OpSender();
+		op1.setAccount(senderAccount.getAccount());
+		op1.setAmount(0.2);
+		op1.setnOperation(senderAccount.getnOperation()+1);
+		//op1.setPayLoad(payload1Hex);
+		
+		String payload2="This Payload to receiver";
+		String payload2Hex=HexConversionsHelper.byteToHex(payload2.getBytes());
+		OpReceiver op2=new OpReceiver();
+		op2.setAccount(126682);
+		op2.setAmount(0.2);
+		op2.setPayLoad(payload2Hex);
+		
+		List<OpSender> senders = new ArrayList<OpSender>();
+		senders.add(op1);
+		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
+		receivers.add(op2);
+		List<OpChanger> changers = new ArrayList<OpChanger>();
+
+		MultiOperation res = client.multiOperationAddOperation(null, true, senders, receivers, changers);
+		
+		assertTrue(res!=null);
+		System.out.println(String.format("Not signed: %d, Signed: %d, Fee: %.4f PASC, Amount:  %.4f PASC, Can Execute:%b", res.getNotSignedCount(),res.getSignedCount(), res.getFee(), res.getAmount(), res.getSignedCanExecute()));
+
+		List<AccountKey> signers = new ArrayList<>();
+		AccountKey aKey=new AccountKey();
+		aKey.setAccount(result.get(0).getAccount());
+		aKey.setBase58PubKey(publicKey.getBase58PubKey());
+		signers.add(aKey);
+		
+		MultiOperation res3 = client.multiOperationSignOffline(res.getRawOperations(), signers);
+		List<Operation> ops=client.executeOperations(res3.getRawOperations());
+		/*
+		String signedTest=key.sign(res.getRawOperations());		
+		List<Operation> ops=client.executeOperations(signedTest); */
+		for(Operation op: ops)
+		{
+			System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
+		}
+	}
+	
+	@Test
+	public void testPublicKeySignature()
+	{
+		Account account1=client.getAccount(381309);
+		PublicKey publicKey1=PublicKey.fromEncodedPubKey(account1.getEncPubkey());
+		String publicKeyStr="3GhhbouUMxp45emoZKLKb4Q9PHRtUiZVQVb2aLeFJUTLxR8aAXJNQh5U226LmMKFL6TBJdVmtVwKnDZvJCTmfWQcnViXexdn8h581B";
+		PublicKey publicKey=client.importPubKey("TestImport1", publicKeyStr);
+		List<Account> result = client.getWalletAccounts(null, publicKey.getBase58PubKey(), null, null);
+		for(Account account:result)
+		{
+			System.out.println(String.format("Account %s has name %s and balance %.4f", account.getAccount(),account.getName(),account.getBalance()));
+		}
+		assertTrue(result.size()>0); 
+		List<AccountKey> signers = new ArrayList<>();
+		AccountKey aKey=new AccountKey();
+		aKey.setAccount(result.get(0).getAccount());
+		aKey.setBase58PubKey(publicKey.getBase58PubKey());
+		signers.add(aKey);
+		
+		Account senderAccount = result.get(0);
+		OpSender op1=new OpSender();
+		op1.setAccount(senderAccount.getAccount());
+		op1.setAmount(0.002);
+		op1.setnOperation(senderAccount.getnOperation()+1);
+		
+		
+		String payload2="";
+		String payload2Hex=HexConversionsHelper.byteToHex(payload2.getBytes());
+		OpReceiver op2=new OpReceiver();
+		op2.setAccount(578781);
+		op2.setAmount(0.002);
+		op2.setPayLoad(payload2Hex);
+		
+		List<OpSender> senders = new ArrayList<OpSender>();
+		senders.add(op1);
+		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
+		receivers.add(op2);
+		List<OpChanger> changers = new ArrayList<OpChanger>();
+
+		MultiOperation res = client.multiOperationAddOperation(null, true, senders, receivers, changers);
+		
+		MultiOperation res3 = client.multiOperationSignOffline(res.getRawOperations(), signers);
+		List<Operation> ops=client.executeOperations(res3.getRawOperations());
+		
+		for(Operation op: ops)
+		{
+			System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
+		}
+		
+	}
+	
+	@Test
+	public void testPublicKey() {
+		String encPub="CA022000FE28DDFB6946AC7FFB363CFD52BAD9120696E1F49BF5919445DBABDA7AA91D5420003D40A0F67C112F99FC2CC0292BF39EAF958EEFEF15FD88EC900F8258F4AFA5DC";
+		PublicKey pub=client.decodePubKey(encPub, null);
+		PublicKey pub2=PublicKey.fromEncodedPubKey(encPub);
+		
+		assertEquals(pub.getX(),pub2.getX());
+		assertEquals(pub.getY(),pub2.getY());
+		assertEquals(pub.getBase58PubKey(),pub2.getBase58PubKey());
+		
+	}
+	
+	@Test
+	public void testMultipleOps() {
+		String raw="";
+		List<OpSender> senders = new ArrayList<OpSender>();
+		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
+		List<OpChanger> changers = new ArrayList<OpChanger>();
+		
+		OpSender op1=new OpSender();
+		op1.setAccount(0);
+		op1.setAmount(10.0);
+		op1.setnOperation(65535);
+		//op1.setPayLoad(payload1Hex);
+		String payload1="This Payload for first operation";
+		String payload2="This Payload to receiver %d";
+		String payload2Hex=HexConversionsHelper.byteToHex(payload1.getBytes());
+		OpReceiver op2=new OpReceiver();
+		op2.setAccount(126682);
+		op2.setAmount(10.0);
+		op2.setPayLoad(payload2Hex);
+		
+		OpChanger op3=new OpChanger();
+		op3.setFee(0.0);
+		op3.setAccount(381404);
+		op3.setNewType(1);
+		op3.setNewName("les.acacies");
+		
+		senders.add(op1);
+		receivers.add(op2);
+		changers.add(op3);
+		MultiOperation res = client.multiOperationAddOperation(null, true, senders, receivers, changers);
+		changers.clear();
+		raw=res.getRawOperations();
+		for(int i=0;i<65;i++) {
+			senders.clear();
+			receivers.clear();
+			op1.setAccount(i+2);
+			op1.setAmount(10.0);
+			op1.setnOperation(65535);
+			senders.add(op1);
+			receivers.clear();
+			op2.setAccount(126682);
+			op2.setAmount(10.0);
+			payload2Hex=HexConversionsHelper.byteToHex(String.format(payload2, i).getBytes());
+			op2.setPayLoad(payload2Hex);
+			receivers.add(op2);
+			res=client.multiOperationAddOperation(raw, false, senders, receivers, changers);
+			raw=res.getRawOperations();
+		}
+		System.out.println(res.getRawOperations());
+	}
+	
+	@Test
+	public void testMultipleOps2() {
+		String raw="";
+		Account acc=client.getAccount(381404);
+		
+		List<OpSender> senders = new ArrayList<OpSender>();
+		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
+		List<OpChanger> changers = new ArrayList<OpChanger>();
+		
+		OpSender op1=new OpSender();
+		op1.setAccount(64535);
+		op1.setAmount(10.0);
+		
+		op1.setnOperation(64);
+		//op1.setPayLoad(payload1Hex);
+		String payload1="This Payload for first operation";
+		String payload2="This Payload to receiver %d";
+		String payload2Hex=HexConversionsHelper.byteToHex(payload1.getBytes());
+		OpReceiver op2=new OpReceiver();
+		op2.setAccount(126682);
+		op2.setAmount(10.0);
+		op2.setPayLoad(payload2Hex);
+		
+		OpChanger op3=new OpChanger();
+		op3.setFee(1.0001);
+		op3.setAccount(381404);
+		op3.setNewType(65536);
+		op3.setNewName("acacies");
+		
+		//senders.add(op1);
+		//receivers.add(op2);
+		changers.add(op3);
+		MultiOperation res = client.multiOperationAddOperation(null, true, senders, receivers, changers);
+		changers.clear();
+		raw=res.getRawOperations();
+//		for(int i=0;i<65;i++) {
+//			senders.clear();
+//			receivers.clear();
+//			op1.setAccount(i+2);
+//			op1.setAmount(10.0);
+//			op1.setnOperation(65535);
+//			senders.add(op1);
+//			receivers.clear();
+//			op2.setAccount(126682);
+//			op2.setAmount(10.0);
+//			payload2Hex=HexConversionsHelper.byteToHex(String.format(payload2, i).getBytes());
+//			op2.setPayLoad(payload2Hex);
+//			receivers.add(op2);
+//			res=client.multiOperationAddOperation(raw, false, senders, receivers, changers);
+//			raw=res.getRawOperations();
+//		}
+		System.out.println(res.getRawOperations());
+		List<AccountKey> signers = new ArrayList<>();
+		AccountKey aKey=new AccountKey();
+		aKey.setAccount(381404);
+		aKey.setBase58PubKey(acc.getEncPubkey());
+		signers.add(aKey);
+		MultiOperation res2=client.multiOperationSignOnline(res.getRawOperations());
+		//List<Operation> ops=client.executeOperations(res2.getRawOperations());
+	}
+	
+	
+	@Test
+	public void testSignatures() {
+		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
+		String pwd ="L1L0kio10";
+		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
+		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
+		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
+		assertEquals(key.getPublicKey().getBase58PubKey(),publicKey.getBase58PubKey());
+		PublicKey publicKey2=client.importPubKey("TestSignatures", publicKey.getBase58PubKey());
+		assertEquals(publicKey.getEncPubKey(),publicKey2.getEncPubKey());
+		List<Account> result = client.getWalletAccounts(null, key.getPublicKey().getBase58PubKey(), null, null);
+		for(Account account:result)
+		{
+			System.out.println(String.format("Account %s has name %s and balance %.4f", account.getAccount(),account.getName(),account.getBalance()));
+		}
+		assertTrue(result.size()>0); 
+		
+		Account senderAccount = result.get(0);
+		OpSender op1=new OpSender();
+		op1.setAccount(senderAccount.getAccount());
+		op1.setAmount(0.2);
+		op1.setnOperation(senderAccount.getnOperation()+1);
+		//op1.setPayLoad(payload1Hex);
+		
+		String payload2="This Payload to receiver";
+		String payload2Hex=HexConversionsHelper.byteToHex(payload2.getBytes());
+		OpReceiver op2=new OpReceiver();
+		op2.setAccount(126682);
+		op2.setAmount(0.2);
+		op2.setPayLoad(payload2Hex);
+		
+		List<OpSender> senders = new ArrayList<OpSender>();
+		senders.add(op1);
+		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
+		receivers.add(op2);
+		List<OpChanger> changers = new ArrayList<OpChanger>();
+
+		MultiOperation res = client.multiOperationAddOperation(null, true, senders, receivers, changers);
+		
+		assertTrue(res!=null);
+		System.out.println(String.format("Not signed: %d, Signed: %d, Fee: %.4f PASC, Amount:  %.4f PASC, Can Execute:%b", res.getNotSignedCount(),res.getSignedCount(), res.getFee(), res.getAmount(), res.getSignedCanExecute()));
+
+		List<AccountKey> signers = new ArrayList<>();
+		AccountKey aKey=new AccountKey();
+		aKey.setAccount(result.get(0).getAccount());
+		aKey.setBase58PubKey(publicKey.getBase58PubKey());
+		signers.add(aKey);
+		MultiOperation res3 = client.multiOperationSignOnline(res.getRawOperations());
+		//MultiOperation res3 = client.multiOperationSignOffline(res.getRawOperations(), signers);
+		//List<Operation> ops=client.executeOperations(res3.getRawOperations());
+		
+		String signedTest=key.sign(res.getRawOperations());		
+		
+		assertEquals(res3.getRawOperations(), signedTest);
+		
+		//List<Operation> ops=client.executeOperations(signedTest); */
+		/*for(Operation op: ops)
+		{
+			System.out.println(String.format("Operation Hash: %s\nOperation Type: %s(%s),Subtype: %s, Timestamp: %d\nAccount %d Account sender %d Balance: %.4f, Account dest: %d, Amount: %.4f, Block: %d, Fee:%.4f\nErrors %s, OpHash %s,\n Payload %s, Maturation %d, OperationBlock %d, V1Ophash %s\n,Valid %s ", op.getOpHash(), op.getType(),op.getTypeDescriptor(),op.getSubType(), op.getTime(), op.getAccount(),op.getSenderAccount(), op.getBalance(), op.getDestAccount(), op.getAmount(), op.getBlock(), op.getFee(), op.getErrors(),op.getOpHash(), op.getPayLoad(),op.getMaturation(), op.getOperationBlock(), op.getV1Ophash(), op.getValid() ));
+		}
+		*/
+		
+	}
+	
+	@Test
+	public void testSignatureChangeInfo() {
+		List<OpSender> senders = new ArrayList<OpSender>();
+		List<OpReceiver> receivers = new ArrayList<OpReceiver>();
+		List<OpChanger> changers = new ArrayList<OpChanger>();
+		
+		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
+		String pwd ="L1L0kio10";
+		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
+		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
+		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
+		assertEquals(key.getPublicKey().getBase58PubKey(),publicKey.getBase58PubKey());
+		PublicKey publicKey2=client.importPubKey("TestSignatures", publicKey.getBase58PubKey());
+		assertEquals(publicKey.getEncPubKey(),publicKey2.getEncPubKey());
+		List<Account> result = client.getWalletAccounts(null, key.getPublicKey().getBase58PubKey(), null, null);
+		for(Account account:result)
+		{
+			System.out.println(String.format("Account %s has name %s and balance %.4f", account.getAccount(),account.getName(),account.getBalance()));
+		}
+		assertTrue(result.size()>0); 
+		
+		Account changerAccount = result.get(0);
+		
+		OpChanger op3=new OpChanger();
+		op3.setFee(1.0001);
+		op3.setAccount(changerAccount.getAccount());
+		op3.setNewType(65536);
+		op3.setNewName("acacies");
+		changers.add(op3);
+		MultiOperation res = client.multiOperationAddOperation(null, true, senders, receivers, changers);
+		String res1=key.sign(res.getRawOperations().substring(24,res.getRawOperations().length()-4));
+		System.out.println(res1);
+		MultiOperation res3 = client.multiOperationSignOnline(res.getRawOperations());
+		assertEquals(res3.getRawOperations().substring(24),res1);
+		
+	}
 }

@@ -1,6 +1,5 @@
 package com.github.davidbolet.jpascalcoin.api.helpers;
 
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.net.URLEncoder;
@@ -9,6 +8,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -16,11 +16,12 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-	/**
-	* Mimics the OpenSSL AES Cipher options for encrypting and decrypting messages using a shared key (aka password) with symetric ciphers.
-	*/
-public class OpenSslAes {
 
+/**
+* Mimics the OpenSSL AES Cipher options for encrypting and decrypting messages using a shared key (aka password) with symetric ciphers.
+*/
+public class OpenSslAes {
+	private static final Logger logger = Logger.getLogger(OpenSslAes.class.getName());
 	/** OpenSSL's magic initial bytes. */
 	private static final String SALTED_STR = "Salted__";
 	private static final byte[] SALTED_MAGIC = SALTED_STR.getBytes(UTF_8);
@@ -37,27 +38,34 @@ public class OpenSslAes {
 	 * @param data      The data to encrypt
 	 * @return  A base64 encoded string containing the encrypted data.
 	 * @throws Exception 
-	 * @throws NoSuchAlgorithmException 
 	 */
 	public static String encrypt(String password, String clearText) throws Exception {
-	    final byte[] pass = password.getBytes(UTF_8);
-	    final byte[] salt =  SALTED_MAGIC;
-	    final byte[] inBytes = clearText.getBytes(UTF_8);
+		 final byte[] inBytes = clearText.getBytes(UTF_8);  
+		 
+		 final byte[] salt = SALTED_MAGIC;//Arrays.copyOfRange(inBytes, 0, 8);
+		 
+		 final byte[] pass = password.getBytes(UTF_8);  
+		 final MessageDigest md = MessageDigest.getInstance("SHA-256");
+		 md.update(pass);
+		 md.update(salt);
+		 final byte[] key =md.digest();
+		    
+		 final MessageDigest md2 = MessageDigest.getInstance("SHA-256");
+		 md2.update(key);
+		 md2.update(pass);
+		 md2.update(salt);
+		    
+	    final byte[] longIv = md2.digest();
 
-	    //byte[] keyAndIv = new byte[0];
-	    final MessageDigest md = MessageDigest.getInstance("SHA-256");
-	    md.update(pass);
-	    md.update(salt);
-	    //md.update(inBytes);
-	    final byte[] keyAndIv =md.digest();
-	    
-	    final byte[] keyValue = Arrays.copyOfRange(pass, 0, 32);
-	    final byte[] iv = Arrays.copyOfRange(keyAndIv,16, 32);
-	    final SecretKeySpec key = new SecretKeySpec(keyValue, "AES");
-
-	    final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-	    cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-	    byte[] data = cipher.doFinal(inBytes);
+		final byte[] keyValue = Arrays.copyOfRange(key, 0, 32);
+		   
+		final byte[] iv = Arrays.copyOfRange(longIv, 0, 16);
+		final SecretKeySpec keySpec = new SecretKeySpec(keyValue, "AES");
+		    
+		final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
+		
+		byte[] data = cipher.doFinal(inBytes);
 	    data =  array_concat(SALTED_MAGIC, data);
 	    return HexConversionsHelper.byteToHex( data ).toUpperCase();
 	}
@@ -74,39 +82,44 @@ public class OpenSslAes {
 	 * @throws BadPaddingException 
 	 * @throws IllegalBlockSizeException 
 	 */
-	public static String decrypt(String password, String source) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
-	    final byte[] pass = password.getBytes(UTF_8);
-
-	    final byte[] inBytes = HexConversionsHelper.decodeStr2Hex(source); //Base64.getDecoder().decode(source.getBytes(UTF_8));
-	    
-	    final byte[] shouldBeMagic = Arrays.copyOfRange(inBytes, 0, SALTED_MAGIC.length);
-	    if (!Arrays.equals(shouldBeMagic, SALTED_MAGIC)) {
-	        throw new IllegalArgumentException("Initial bytes from input do not match OpenSSL SALTED_MAGIC salt value.");
+	public static String decrypt(String password, String source) {
+	    try {
+			final byte[] pass = password.getBytes(UTF_8);
+	
+		    final byte[] inBytes = HexConversionsHelper.decodeStr2Hex(source); //Base64.getDecoder().decode(source.getBytes(UTF_8));
+		    
+		    final byte[] shouldBeMagic = Arrays.copyOfRange(inBytes, 0, SALTED_MAGIC.length);
+		    if (!Arrays.equals(shouldBeMagic, SALTED_MAGIC)) {
+		        throw new IllegalArgumentException("Initial bytes from input do not match OpenSSL SALTED_MAGIC salt value.");
+		    }
+		   
+		    final byte[] salt = Arrays.copyOfRange(inBytes, SALTED_MAGIC.length, SALTED_MAGIC.length + 8);
+		   
+		    final MessageDigest md = MessageDigest.getInstance("SHA-256");
+		    md.update(pass);
+		    md.update(salt);
+		    final byte[] key =md.digest();
+		    
+		    final MessageDigest md2 = MessageDigest.getInstance("SHA-256");
+		    md2.update(key);
+		    md2.update(pass);
+		    md2.update(salt);
+		    
+	        final byte[] longIv = md2.digest();
+	
+		    final byte[] keyValue = Arrays.copyOfRange(key, 0, 32);
+		   
+		    final byte[] iv = Arrays.copyOfRange(longIv, 0, 16);
+		    final SecretKeySpec keySpec = new SecretKeySpec(keyValue, "AES");
+		    
+		    final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		    cipher.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(iv));
+		    final byte[] clear = cipher.doFinal(inBytes, 16, inBytes.length -16 );
+		    return HexConversionsHelper.byteToHex(clear).toUpperCase();
+	    } catch(Exception ex) {
+	    	logger.severe(ex.getMessage());
+	    	return null;
 	    }
-	   
-	    final byte[] salt = Arrays.copyOfRange(inBytes, SALTED_MAGIC.length, SALTED_MAGIC.length + 8);
-	   
-	    final MessageDigest md = MessageDigest.getInstance("SHA-256");
-	    md.update(pass);
-	    md.update(salt);
-	    final byte[] key =md.digest();
-	    
-	    final MessageDigest md2 = MessageDigest.getInstance("SHA-256");
-	    md2.update(key);
-	    md2.update(pass);
-	    md2.update(salt);
-	    
-        final byte[] longIv = md2.digest();
-
-	    final byte[] keyValue = Arrays.copyOfRange(key, 0, 32);
-	   
-	    final byte[] iv = Arrays.copyOfRange(longIv, 0, 16);
-	    final SecretKeySpec keySpec = new SecretKeySpec(keyValue, "AES");
-	    
-	    final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-	    cipher.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(iv));
-	    final byte[] clear = cipher.doFinal(inBytes, 16, inBytes.length -16 );
-	    return HexConversionsHelper.byteToHex(clear).toUpperCase().substring(8);
 	}
 
 

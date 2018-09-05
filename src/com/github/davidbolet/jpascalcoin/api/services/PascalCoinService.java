@@ -238,6 +238,10 @@ public interface PascalCoinService {
     @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
  	@POST("/")
     Call<OpResult<MultiOperation>> multiOperationDeleteOperation(@Body Map<String, Object> body);
+
+    @Headers({"Content-Type: application/json","User-Agent: JPascalCoin"})
+ 	@POST("/")
+	Call<OpResult<PublicKey>> importPubKey(@Body Map<String, Object> body);
 	
     
     

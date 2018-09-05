@@ -1522,6 +1522,37 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public PublicKey importPubKey(String name, String b58PubKey) {
+		PublicKey result = null;
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","importpubkey");
+		if (name==null)
+			throw new IllegalArgumentException("Name parameter is mandatory");
+		params.put("name", name);
+		if (b58PubKey!=null)
+			params.put("b58_pubkey", b58PubKey);
+		else
+			throw new IllegalArgumentException("You have to specify b58PubKey parameter to import 'pubkey'");
+		body.put("params",params);
+		Call<OpResult<PublicKey>> decodePubKeyCall= pascalCoinService.importPubKey(body);
+		try {
+			Response<OpResult<PublicKey>> response = decodePubKeyCall.execute();
+			if (response.body().isError())
+			{
+				logger.log(Level.SEVERE, response.body().getErrorMessage());
+				throw response.body().getError();
+			}
+			result = response.body().getResult();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, e.getMessage());
+		}
+		return result;
+	}
+	
+	
 
 	@Override
 	public String payloadEncrypt(String payload, String payloadMethod, String pwd, String encPubKey, String b58PubKey) {

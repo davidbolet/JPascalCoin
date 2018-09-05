@@ -1,14 +1,18 @@
 package com.github.davidbolet.jpascalcoin.api.helpers;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.Signature;
+import java.security.SignatureException;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.interfaces.ECPrivateKey;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
@@ -41,6 +45,23 @@ public class BouncyCastleKeyHelper {
         }
     }
 	
-
+	/**
+	 * Generates a signature with SHA256withECDSA algorithm
+	 * @param plaintext Text to sign
+	 * @param key PrivateKey used to sign 
+	 * @return byte[] signed bytes
+	 * @throws SignatureException
+	 * @throws UnsupportedEncodingException
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException
+	 */
+	public static byte[] generateSignature(String plaintext, PrivateKey key) throws SignatureException, UnsupportedEncodingException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException{
+		Signature ecdsaSign = Signature.getInstance("SHA256withECDSA", "BC");
+		ecdsaSign.initSign(key);
+		ecdsaSign.update(plaintext.getBytes("UTF-8"));
+		byte[] signature = ecdsaSign.sign();
+		return signature;
+	}
 
 }

@@ -20,6 +20,13 @@ public enum KeyType {
     public int getValue() {
         return value;
     }
+    
+    public static KeyType fromValue(int value) {
+    	for(KeyType result: KeyType.values()) {
+    		if (result.getValue()==value) return result;
+    	}
+    	return null;
+    }
 
     private KeyType(int value) {
         this.value = value;

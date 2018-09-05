@@ -669,6 +669,14 @@ public interface PascalCoinClient {
 			 */
 			MultiOperation multiOperationDeleteOperation(String rawoperations,Integer index);
 
+			/**
+			 * This method imports given String as a named public key for the wallet
+			 * @param name String name of the key
+			 * @param b58PubKey Encoded public key in B58 format
+			 * @return
+			 */
+			PublicKey importPubKey(String name, String b58PubKey);
+
 			
 
 			
