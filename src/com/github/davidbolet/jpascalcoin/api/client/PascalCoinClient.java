@@ -13,12 +13,15 @@ import com.github.davidbolet.jpascalcoin.api.model.MultiOperation;
 import com.github.davidbolet.jpascalcoin.api.model.NodeStatus;
 import com.github.davidbolet.jpascalcoin.api.model.OpChanger;
 import com.github.davidbolet.jpascalcoin.api.model.OpReceiver;
+import com.github.davidbolet.jpascalcoin.api.model.OpResult;
 import com.github.davidbolet.jpascalcoin.api.model.OpSender;
 import com.github.davidbolet.jpascalcoin.api.model.Operation;
 import com.github.davidbolet.jpascalcoin.api.model.PayLoadEncryptionMethod;
 import com.github.davidbolet.jpascalcoin.api.model.PublicKey;
 import com.github.davidbolet.jpascalcoin.api.model.RawOperation;
 import com.github.davidbolet.jpascalcoin.api.model.SignResult;
+
+import retrofit2.Callback;
 
 /**
  * Java wrapper for API methods offered by pascalcoin wallet
@@ -27,10 +30,18 @@ import com.github.davidbolet.jpascalcoin.api.model.SignResult;
  */
 public interface PascalCoinClient {
 	
-			/** Adds a node to connect 																			
-			*  @param nodes String containing 1 or multiple IP:port separated by ';'
-			*  @return Returns an integer with nodes added */
+			/** 
+			 * Adds a node to connect to 																			
+			 * @param nodes String containing 1 or multiple IP:port separated by ';'
+			 * @return Returns an integer with nodes added */
 			Integer addNode(String nodes);
+			
+			/**
+			 * Adds a node to connect to
+			 * @param nodes: String containing 1 or multiple IP:port separated by ';'
+			 * @param addNodeCallback: Callback function to execute when result is ready
+			 */
+			void addNodeAsync(String nodes, Callback<OpResult<Integer>> addNodeCallback);
 
 			/**
 			* Returns a JSON Object with account information including pending operations not included in blockchain yet, but affecting this account.		
@@ -41,6 +52,13 @@ public interface PascalCoinClient {
 			Account getAccount(Integer account);
 			
 			/**
+			 * Executes getAccount on Asynchronous mode
+			 * @param account: Cardinal containing account number 
+			 * @param getAccountCallback: Callback function to execute when result is ready
+			 */
+			void getAccountAsync(Integer account, Callback<OpResult<Account>> getAccountCallback);
+			
+			/**
 			 * Returns a JSON array with all wallet accounts.
 			 * @param encPubKey:  HEXASTRING (optional). If provided, return only accounts of this public key
 			 * @param b58PubKey: String (optional). If provided, return only accounts of this public key. Note: If use enc_pubkey and b58_pubkey together and is not the same public key, will return an error
@@ -48,6 +66,17 @@ public interface PascalCoinClient {
 			 * @param max: Integer (optional, default = 100). If provided, will return max accounts. If not provided, max=100 by default
 			 * @return Each JSON array item contains an Account Object */
 			List<Account> getWalletAccounts(String encPubKey, String b58PubKey , Integer start, Integer max);
+			
+			/**
+			 * Returns a JSON array with all wallet accounts.
+			 * @param encPubKey:  HEXASTRING (optional). If provided, return only accounts of this public key
+			 * @param b58PubKey: String (optional). If provided, return only accounts of this public key. Note: If use enc_pubkey and b58_pubkey together and is not the same public key, will return an error
+			 * @param start: Integer (optional, default = 0). If provided, will return wallet accounts starting at this position (index starts at position 0)
+			 * @param max: Integer (optional, default = 100). If provided, will return max accounts. If not provided, max=100 by default
+			 * @param getWalletAccountsCallback Callback function to execute when result is ready
+			 */
+			void getWalletAccountsAsync(String encPubKey, String b58PubKey, Integer start, Integer max, Callback<OpResult<List<Account>>> getWalletAccountsCallback);
+			
 
 			/**
 			 * Get number of available wallet accounts (total or filtered by public key)
@@ -56,6 +85,14 @@ public interface PascalCoinClient {
 			 * @return Returns an integer with total */		
 			Integer getWalletAccountsCount(String encPubKey, String b58PubKey);
 
+			/**
+			 * Get number of available wallet accounts (total or filtered by public key)
+			 * @param encPubKey: HEXASTRING (optional). If provided, return only accounts of this public key
+			 * @param b58PubKey: String (optional). If provided, return only accounts of this public key. Note: If use enc_pubkey and b58_pubkey together and is not the same public key, will return an error
+			 * @param getWalletAccountsCountCallback Callback function to execute when result is ready
+			 */
+			void getWalletAccountsCountAsync(String encPubKey, String b58PubKey, Callback<OpResult<Integer>> getWalletAccountsCountCallback);
+			
 			/** 
 			* Returns a JSON Array with all pubkeys of the Wallet (address)
 			* @param start: Integer (optional, default = 0). If provided, will return wallet public keys starting at this position (index starts at position 0)
@@ -64,12 +101,29 @@ public interface PascalCoinClient {
 			List<PublicKey> getWalletPubKeys(Integer start, Integer max);
 			
 			/**
+			* Returns a JSON Array with all pubkeys of the Wallet (address)
+			* @param start: Integer (optional, default = 0). If provided, will return wallet public keys starting at this position (index starts at position 0)
+			* @param max: Integer (optional, default = 100). If provided, will return max public keys. If not provided, max=100 by default
+			 * @param getWalletPubKeyCallback: Callback function to execute when result is ready
+			 */
+			void getWalletPubKeysAsync(Integer start, Integer max, Callback<OpResult<List<PublicKey>>> getWalletPubKeyCallback);
+			
+			/**
 			 * Returns a JSON Object with a public key if found in the Wallet
 			 * @param encPubKey: HEXASTRING
 			 * @param b58PubKey: String
 			 * Note: If use enc_pubkey and b58_pubkey together and is not the same public key, will return an error
 			 * @return Returns a JSON Object with a "Public Key Object" */
 			PublicKey getWalletPubKey(String encPubKey, String b58PubKey);
+			
+			/**
+			 * Returns a JSON Object with a public key if found in the Wallet
+			 * @param encPubKey: HEXASTRING
+			 * @param b58PubKey: String
+			 * Note: If use enc_pubkey and b58_pubkey together and is not the same public key, will return an error
+			 * @param getWalletPubKeyCallback: Callback function to execute when result is ready
+			 */
+			void getWalletPubKeyAsync(String encPubKey, String b58PubKey, Callback<OpResult<PublicKey>> getWalletPubKeyCallback);
 
 			/**
 			 * Returns coins balance.
@@ -182,6 +236,16 @@ public interface PascalCoinClient {
 			List<Account> findAccounts(String name, Integer type, Integer start, Integer max);
 			
 			/**
+			 * Find accounts by name/type and returns them as an array of Account objects
+			* @param name: If has value, will return the account that match name
+			* @param type: If has value, will return accounts with same type
+			* @param start: Starting account number (by default, 0) 
+			* @param max: Max of accounts returned in array (by default, 100) 
+			 * @param findAccountsCallback Function to execute when the result is ready
+			 */
+			void findAccountsAsync(String name, Integer type, Integer start, Integer max, Callback<OpResult<List<Account>>> findAccountsCallback);
+			
+			/**
 			 * Find accounts by name/type/forSale/balanceMin/balanceMax and returns them as an array of Account objects
 			 * @param name If has value, will be used to find the account that matches name
 			 * @param exact Used in conjunction with name. By default is set to true. If it's true,will return that matches exactly with name, otherwise will return all Account objects 
@@ -196,6 +260,21 @@ public interface PascalCoinClient {
 			 */
 			List<Account> findAccounts(String name, Boolean exact, Integer type, Boolean listed, Double minBalance, Double maxBalance,
 					Integer start, Integer max);
+			
+			/**
+			 * Find accounts by name/type/forSale/balanceMin/balanceMax and returns them as an array of Account objects
+			 * @param name If has value, will be used to find the account that matches name
+			 * @param exact Used in conjunction with name. By default is set to true. If it's true,will return that matches exactly with name, otherwise will return all Account objects 
+			 * 				whose name starts with name's parameter value
+			 * @param type  If has value, will return accounts with same type
+			 * @param listed By default set to false. If it's set to true, will return only accounts for sale
+			 * @param minBalance If set, will return accounts whose balance is greater or equal than its value
+			 * @param maxBalance If set, will return accounts whose balance is less or equal than its value
+			 * @param start Starting account number (by default, 0) 
+			 * @param max Max of accounts returned in result's array (by default, 100) 
+			 * @param findAccountsCallback findAccountsCallback Function to execute when the result is ready
+			 */
+			void findAccountsAsync(String name, Boolean exact, Integer type, Boolean listed, Double minBalance, Double maxBalance, Integer start, Integer max, Callback<OpResult<List<Account>>> findAccountsCallback);
 			
 			/**
 			 * Executes a transaction operation from "sender" to "target"
@@ -589,6 +668,14 @@ public interface PascalCoinClient {
 			 * @return If success will return a "MultiOperation Object"
 			 */
 			MultiOperation multiOperationDeleteOperation(String rawoperations,Integer index);
+
+			/**
+			 * This method imports given String as a named public key for the wallet
+			 * @param name String name of the key
+			 * @param b58PubKey Encoded public key in B58 format
+			 * @return
+			 */
+			PublicKey importPubKey(String name, String b58PubKey);
 
 			
 

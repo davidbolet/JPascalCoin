@@ -11,7 +11,7 @@ public enum KeyType {
 	SECP384R1(715),
 	
 	@SerializedName("729")
-	SECP283K1(729),
+	SECT283K1(729), 
 	
 	@SerializedName("716")
 	SECP521R1(716);
@@ -19,6 +19,13 @@ public enum KeyType {
 	private final int value;
     public int getValue() {
         return value;
+    }
+    
+    public static KeyType fromValue(int value) {
+    	for(KeyType result: KeyType.values()) {
+    		if (result.getValue()==value) return result;
+    	}
+    	return null;
     }
 
     private KeyType(int value) {
