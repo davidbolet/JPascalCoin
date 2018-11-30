@@ -1,0 +1,22 @@
+#Configuration for your testing server
+jPascalcoin.client.ip=10.211.55.10
+#jPascalcoin.client.ip=10.211.55.7
+jPascalcoin.client.port=4003
+jPascalcoin.client.logLevel=1
+
+#Your daemon server storage Password (be careful!)
+jPascalcoin.wallet.password=<your wallet password>
+
+#Keys for tests (must be contained on daemon)
+jPascalcoin.client.publicKey.encoded=<Public key in encoded format>
+jPascalcoin.client.publicKey.b58=<Public key in B58 format>
+
+#Some accounts for tests (substitute with yours. Checksum is not needed)
+jPascalcoin.test.accountId = 5454
+jPascalcoin.test.account2Id = 1000
+jPascalcoin.test.account3Id = 354309
+jPascalcoin.test.account4Id = 385404
+
+#Some other properties for testing
+
+jPascalcoin.test.addNode.nodeList= 139.59.149.12,207.154.196.101

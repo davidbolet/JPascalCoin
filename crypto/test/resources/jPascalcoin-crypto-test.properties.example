@@ -1,0 +1,25 @@
+
+#Configuration for your testing server
+jPascalcoin.client.ip=<your wallet server ip>
+#jPascalcoin.client.ip=10.211.55.7
+jPascalcoin.client.port=4003
+jPascalcoin.client.logLevel=1
+
+#Your daemon server storage Password (be careful!)
+jPascalcoin.wallet.password=<your password>
+
+
+#Private key for testing pruposes (this is from the testNet)
+
+jPascalcoin.test.privateKey.testNetwork=37B799726961D231492823513F5686B3F7C7909DEFF20907D91BF4D24A356624
+
+jPascalcoin.test.privateKey.mainNetwork1=<A private key in RAW format>
+
+jPascalcoin.test.privateKey.password=<This must input password to decrypt the following private key>
+jPascalcoin.test.privateKey.mainNetwork1.encoded=<A password encoded private key (as is exported from wallet)>
+jPascalcoin.test.publicKey.mainNetwork1=3GhhbovBWTZfEoHXYMFtGkrmADW3KEgVq7uU4cKeLpqJaDBWPTxEooGb5CooBw1jKwtAzWkGafb4z7Cmuk5kCiTB49rgsHnqdUTsic
+
+jPascalcoin.test.privateKey.mainNetwork2=<A private key in RAW format>
+jPascalcoin.test.privateKey.mainNetwork2.encoded=<An encoded private key>
+
+jPascalcoin.test.privateKey.mainNetwork3.encoded=<An encoded private key>
