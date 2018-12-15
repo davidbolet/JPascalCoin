@@ -1,6 +1,9 @@
 package com.github.davidbolet.jpascalcoin.crypto.model;
 
+import com.github.davidbolet.jpascalcoin.common.helper.OpenSslAes;
+import com.github.davidbolet.jpascalcoin.common.model.PascPublicKey;
 import com.github.davidbolet.jpascalcoin.common.model.PayLoadEncryptionMethod;
+import com.github.davidbolet.jpascalcoin.crypto.helper.EncryptionUtils;
 
 /**
  * Abstract class that represent protocol operations
@@ -21,8 +24,8 @@ public abstract class PascOperation {
 	 * @param payloadMethod enum indicating how the payload will be included
 	 * @param pwd String Password to encript the payload if encription method is 'password'
 	 */
-	PascOperation(byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd) {
-		this.payload=payload;
+	PascOperation(byte[] payloadIntro, PayLoadEncryptionMethod payloadMethod, String pwd, PascPublicKey publicKey) {
+		this.payload=processPayload(payloadIntro, payloadMethod, pwd, publicKey);
 		this.payloadEncriptionMethod=payloadMethod;
 		this.password=pwd;
 	}
@@ -73,4 +76,32 @@ public abstract class PascOperation {
 	 * @return String containing the RAWOPERATIONS string to be send
 	 */
 	public abstract String getRawOperations(String signR, String signS);
+	
+	/**
+	 * Returns bytearray corresponding to the payload encrypted with corresponding encryption method
+	 * @return bytearray to be added for calculus
+	 */
+	public byte[] getPayload() {
+		return this.payload;
+	}
+	
+	protected byte[] processPayload(byte[] payload, PayLoadEncryptionMethod payloadEncriptionMethod, String password, PascPublicKey publicKeyToEncript) {
+		if (payload==null || payloadEncriptionMethod==null)
+			return new byte[0];
+		try {
+			switch (payloadEncriptionMethod) {
+				case NONE: 
+					return payload;
+			case AES:
+					return OpenSslAes.encrypt(password, payload);
+			case DEST:
+			case SENDER:
+				return EncryptionUtils.encryptWithPublicKey(publicKeyToEncript, payload);				
+			default:
+				return new byte[0];
+			}
+		} catch(Exception ex) {}
+		return new byte[0];
+	}
+	
 }

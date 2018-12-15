@@ -831,9 +831,9 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		Map<String,Object> params = new HashMap<>();
 		body.put("method","changeaccountinfo");
 		if (newEncPubKey!=null)
-			params.put("enc_pubkey", newEncPubKey);
+			params.put("new_enc_pubkey", newEncPubKey);
 		if (newB58PubKey!=null)
-			params.put("b58_pubkey", newB58PubKey);
+			params.put("new_b58_pubkey", newB58PubKey);
 		if (account_target!=null)
 			params.put("account_target", account_target);
 		if (account_signer!=null)

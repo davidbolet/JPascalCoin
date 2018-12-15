@@ -2,16 +2,17 @@ package com.github.davidbolet.jpascalcoin.common.helper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import java.security.NoSuchAlgorithmException;
 
 /**
 * Mimics the OpenSSL AES Cipher options for encrypting and decrypting messages using a shared key (aka password) with symetric ciphers.
@@ -20,6 +21,7 @@ public class OpenSslAes {
 	private static final Logger logger = Logger.getLogger(OpenSslAes.class.getName());
 	/** OpenSSL's magic initial bytes. */
 	private static final String SALTED_STR = "Salted__";
+	//[8bytes:Salted__]+[8bytes:random salt]+[Nbytes:rest..]
 	private static final byte[] SALTED_MAGIC = SALTED_STR.getBytes(UTF_8);
 
 
@@ -28,6 +30,62 @@ public class OpenSslAes {
 	    return URLEncoder.encode(encrypted, UTF_8.name() );
 	}
 
+	
+	private static byte[] getKey(String password, byte[] salt) throws NoSuchAlgorithmException {
+		 final MessageDigest md = MessageDigest.getInstance("SHA-256");
+		 md.update(password.getBytes(UTF_8));
+		 md.update(salt);
+		 byte[] keyValue =md.digest();
+		 return Arrays.copyOfRange(keyValue, 0, 32);
+	}
+	
+	private static byte[] getIV(byte[] key, String password, byte[] salt) throws NoSuchAlgorithmException {
+		final MessageDigest md = MessageDigest.getInstance("SHA-256");
+		md.update(key);
+		 md.update(password.getBytes(UTF_8));
+		 md.update(salt);
+		 byte[] keyValue =md.digest();
+		 return Arrays.copyOfRange(keyValue, 0, 16);
+	}
+	
+	
+	/**
+	 *
+	 * @param password  The password / key to encrypt with.
+	 * @param inBytes Data to encrypt
+	 * @return  A base64 encoded string containing the encrypted data.
+	 * @throws Exception if there's an error
+	 */
+	public static byte[] encrypt(String password, byte[] inBytes) throws Exception {
+		 try {
+			 byte[] salt=new byte[8];
+			 Random random= new Random();
+			 random.nextBytes(salt);
+			 final byte[] key =getKey(password,salt);			    
+		     final byte[] longIv = getIV( key, password, salt);
+		  
+		     ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+		     outputStream.write(SALTED_MAGIC );
+		     outputStream.write( salt);
+
+		    IvParameterSpec iv = new IvParameterSpec(longIv);
+			SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+
+			byte[] encrypted = cipher.doFinal(inBytes);
+			
+			outputStream.write( encrypted);
+	
+			return outputStream.toByteArray();
+		    } catch(Exception ex) {
+		    	logger.severe(ex.getMessage());
+		    	return null;
+		    }
+	}
+	
+	
 	/**
 	 *
 	 * @param password  The password / key to encrypt with.
@@ -37,37 +95,36 @@ public class OpenSslAes {
 	 */
 	public static String encrypt(String password, String source) throws Exception {
 		 try {
-			 final byte[] pass = password.getBytes(UTF_8);
 				
 			 final byte[] inBytes = HexConversionsHelper.decodeStr2Hex(source);
 			 
-			 final MessageDigest md = MessageDigest.getInstance("SHA-256");
-			 md.update(pass);
-			 md.update(SALTED_MAGIC);
-			 final byte[] key =md.digest();
-			    
-			 final MessageDigest md2 = MessageDigest.getInstance("SHA-256");
-			 md2.update(key);
-			 md2.update(pass);
-			 md2.update(SALTED_MAGIC);
-			    
-		     final byte[] longIv = md2.digest();
-		     final byte[] keyValue = Arrays.copyOfRange(key, 0, 32);
-			   
-			 final byte[] iv = Arrays.copyOfRange(longIv, 0, 16);
-			 final SecretKeySpec keySpec = new SecretKeySpec(keyValue, "AES");
-			    
-			 final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-			 cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
-			 final byte[] clear = array_concat(SALTED_MAGIC, cipher.doFinal(inBytes));
-			 
-			 return HexConversionsHelper.byteToHex(clear).toUpperCase();
+			 byte[] salt=new byte[8];
+			 Random random= new Random();
+			 random.nextBytes(salt);
+			 final byte[] key =getKey(password,salt);			    
+		     final byte[] longIv = getIV( key, password, salt);
+		  
+		     ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+		     outputStream.write(SALTED_MAGIC );
+		     outputStream.write( salt);
+
+		    IvParameterSpec iv = new IvParameterSpec(longIv);
+			SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+
+			byte[] encrypted = cipher.doFinal(inBytes);
+			
+			outputStream.write( encrypted);
+	
+			return HexConversionsHelper.byteToHex(outputStream.toByteArray()).toUpperCase();
 		    } catch(Exception ex) {
 		    	logger.severe(ex.getMessage());
 		    	return null;
 		    }
 	}
-
+	
 	/**
 	 * look at http://stackoverflow.com/questions/32508961/java-equivalent-of-an-openssl-aes-cbc-encryption
 	 * for what looks like a useful answer. The not-yet-commons-ssl also has an implementation

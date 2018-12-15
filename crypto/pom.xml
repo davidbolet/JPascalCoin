@@ -49,7 +49,7 @@
 	     <resource>
 	     <directory>${project.basedir}</directory>
 	        <includes>
-	            <include>test/resources/jPascalcoin-test.properties</include>
+	            <include>test/resources/jPascalcoin-crypto-test.properties</include>
 	        </includes>
 	     </resource>
 	    </resources>

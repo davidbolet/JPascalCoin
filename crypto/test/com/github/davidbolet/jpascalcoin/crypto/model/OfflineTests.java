@@ -32,7 +32,7 @@ public class OfflineTests {
 		Double fee = 0.0001;
 		byte[] payload="EXAMPLE".getBytes();
 		
-		TransferOperation transferOperation=new TransferOperation(sender,receiver,nOperation, amount, fee, payload, PayLoadEncryptionMethod.NONE, null);
+		TransferOperation transferOperation=new TransferOperation(sender,receiver,null, null,nOperation, amount, fee, payload, PayLoadEncryptionMethod.NONE, null);
 		
 		String result= HexConversionsHelper.byteToHex(transferOperation.generateOpDigest(4.0f)).toUpperCase();
 		
@@ -65,7 +65,7 @@ Final HASH value to be signed in Protocol V4 is:
 		Double fee = 0.0001;
 		byte[] payload="EXAMPLE".getBytes();
 		
-		TransferOperation transferOperation=new TransferOperation(sender,receiver,nOperation, amount, fee, payload, PayLoadEncryptionMethod.NONE, null);
+		TransferOperation transferOperation=new TransferOperation(sender,receiver, null,null,nOperation,amount, fee, payload, PayLoadEncryptionMethod.NONE, null);
 		byte[] toSign=transferOperation.generateOpDigest(4.0f);
 		String text=HexConversionsHelper.byteToHex(toSign);
 		System.out.println(text);

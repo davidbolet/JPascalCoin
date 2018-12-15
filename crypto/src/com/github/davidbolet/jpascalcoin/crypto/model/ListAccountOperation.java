@@ -7,60 +7,95 @@ import com.github.davidbolet.jpascalcoin.crypto.model.PascOperation;
 import com.github.davidbolet.jpascalcoin.common.model.PascPublicKey;
 import com.github.davidbolet.jpascalcoin.common.model.PayLoadEncryptionMethod;
 
-public class TransferOperation extends PascOperation implements Serializable {
+public class ListAccountOperation extends PascOperation implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	final Integer accountSender;
-	final Integer accountTarget;
+	final Integer accountSigner;
+	final Integer accountToSell;
+	final Integer accountPayed;
 	final Integer nOperation;
-	final Double amount;
+	final Integer lockedUntilBlock;
+	final Double price;
 	final Double fee;
+	final PascPublicKey signerPublicKey;
+	final PascPublicKey accountBuyerPublicKey;
 	
-	public TransferOperation(Integer accountSender,Integer accountTarget,PascPublicKey senderPublicKey,PascPublicKey receiverPublicKey, Integer nOperation, Double amount, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd ) {
-		super(payload,payloadMethod, pwd,payloadMethod==PayLoadEncryptionMethod.SENDER?senderPublicKey:payloadMethod==PayLoadEncryptionMethod.DEST?receiverPublicKey:null);
-		this.accountSender=accountSender;
-		this.accountTarget=accountTarget;
+	public ListAccountOperation(Integer accountSigner,PascPublicKey signerPublicKey, Integer accountToSell,Integer accountPayed, PascPublicKey accountBuyerPublicKey, Integer nOperation, Double price, Double fee, Integer lockedUntilBlock, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd ) {
+		super(payload,payloadMethod, pwd,payloadMethod==PayLoadEncryptionMethod.SENDER?signerPublicKey:payloadMethod==PayLoadEncryptionMethod.DEST?accountBuyerPublicKey:null);
+		this.accountSigner=accountSigner;
+		this.accountToSell=accountToSell;
+		this.accountPayed=accountPayed;
 		this.nOperation=nOperation;
-		this.amount=amount;
+		this.price=price;
 		this.fee=fee;
+		this.lockedUntilBlock=lockedUntilBlock==null?0:lockedUntilBlock;
+		this.accountBuyerPublicKey=accountBuyerPublicKey;
+		this.signerPublicKey=signerPublicKey;
 	}
+
 
 	@Override
 	public byte[] generateOpDigest(float protocolVersion) {
 		StringBuffer digestBuffer = new StringBuffer();
-		digestBuffer.append(HexConversionsHelper.int2BigEndianHex4Byte(accountSender))
+		digestBuffer.append(HexConversionsHelper.int2BigEndianHex4Byte(accountSigner))
+		.append(HexConversionsHelper.int2BigEndianHex4Byte(accountToSell))
 		.append(HexConversionsHelper.int2BigEndianHex4Byte(nOperation))
-		.append(HexConversionsHelper.int2BigEndianHex4Byte(accountTarget))
-		.append(HexConversionsHelper.int2BigEndianHex8Byte(Math.round(amount*10000)))
+		.append(HexConversionsHelper.int2BigEndianHex8Byte(Math.round(price*10000)))
+		.append(HexConversionsHelper.int2BigEndianHex4Byte(accountPayed))
 		.append(HexConversionsHelper.int2BigEndianHex8Byte(Math.round(fee*10000)))
 		.append(HexConversionsHelper.byteToHex(getPayload()).toUpperCase())
 		.append(HexConversionsHelper.int2BigEndianHex(0));
+		if (accountBuyerPublicKey!=null) {
+			digestBuffer.append(accountBuyerPublicKey.getEncPubKey());
+		}
+		else
+		{
+			digestBuffer.append(HexConversionsHelper.int2BigEndianHex(0));
+			digestBuffer.append(HexConversionsHelper.int2BigEndianHex(0));
+			digestBuffer.append(HexConversionsHelper.int2BigEndianHex(0));
+		}
+		digestBuffer.append(HexConversionsHelper.int2BigEndianHex4Byte(lockedUntilBlock));
 		if (protocolVersion>=4.0f)
 		{
-			digestBuffer.append("01");
+			digestBuffer.append("04");
 		}
 		finalHash=digestBuffer.toString();
 		return HexConversionsHelper.decodeStr2Hex(finalHash);
 	}
+	
 	
 	@Override
 	public String getRawOperations(String signR, String signS) {
 		StringBuffer digestBuffer = new StringBuffer();
 		//Operations count (1 for this example) stored as a little endian in 4 bytes
 		digestBuffer.append(HexConversionsHelper.int2BigEndianHex4Byte(1))
-		.append("01000000") //Optype
-		.append(HexConversionsHelper.int2BigEndianHex4Byte(accountSender))
+		.append(HexConversionsHelper.int2BigEndianHex4Byte(4)) //Optype
+		.append(HexConversionsHelper.int2BigEndianHex4Byte(accountSigner))
+		.append(HexConversionsHelper.int2BigEndianHex4Byte(accountToSell))
+		.append(HexConversionsHelper.int2BigEndianHex(4)) //Optype
 		.append(HexConversionsHelper.int2BigEndianHex4Byte(nOperation))
-		.append(HexConversionsHelper.int2BigEndianHex4Byte(accountTarget))
-		.append(HexConversionsHelper.int2BigEndianHex8Byte(Math.round(amount*10000)))
+		.append(HexConversionsHelper.int2BigEndianHex8Byte(Math.round(price*10000)))
+		.append(HexConversionsHelper.int2BigEndianHex4Byte(accountPayed))
+//		.append(HexConversionsHelper.int2BigEndianHex(0))
+//		.append(HexConversionsHelper.int2BigEndianHex(0))
+		.append(HexConversionsHelper.int2BigEndianHex(0));
+		if (accountBuyerPublicKey!=null) {
+			digestBuffer.append(accountBuyerPublicKey.getEncPubKey());
+		}
+		else
+		{
+			digestBuffer.append(HexConversionsHelper.int2BigEndianHex(0));
+			digestBuffer.append(HexConversionsHelper.int2BigEndianHex(0));
+			digestBuffer.append(HexConversionsHelper.int2BigEndianHex(0));
+		}
+		digestBuffer.append(HexConversionsHelper.int2BigEndianHex4Byte(lockedUntilBlock))		
 		.append(HexConversionsHelper.int2BigEndianHex8Byte(Math.round(fee*10000)))
 		.append(HexConversionsHelper.int2BigEndianHex(getPayload().length))
 		.append(HexConversionsHelper.byteToHex(getPayload()).toUpperCase())
-		.append("000000000000")
 		.append(HexConversionsHelper.int2BigEndianHex(signR.length()/2))
 		.append(signR)
 		.append(HexConversionsHelper.int2BigEndianHex(signS.length()/2))
@@ -68,7 +103,80 @@ public class TransferOperation extends PascOperation implements Serializable {
 		return digestBuffer.toString();
 	}
 
-	/*
+	/* 
+  Stream.Write(FData.account_signer,Sizeof(FData.account_signer));
+  Stream.Write(FData.account_target,Sizeof(FData.account_target));
+  case FData.operation_type of
+    lat_ListForSale : w := CT_Op_ListAccountForSale;
+    lat_DelistAccount : w := CT_Op_DelistAccount;
+  else raise Exception.Create('ERROR DEV 20170412-1');
+  end;
+  Stream.Write(w,2);
+  Stream.Write(FData.n_operation,Sizeof(FData.n_operation));
+  if FData.operation_type=lat_ListForSale then begin
+    Stream.Write(FData.account_price,Sizeof(FData.account_price));
+    Stream.Write(FData.account_to_pay,Sizeof(FData.account_to_pay));
+    
+    Stream.Write(FData.public_key.EC_OpenSSL_NID,Sizeof(FData.public_key.EC_OpenSSL_NID));6
+    TStreamOp.WriteAnsiString(Stream,FData.public_key.x);
+    TStreamOp.WriteAnsiString(Stream,FData.public_key.y);
+    
+    TStreamOp.WriteAnsiString(Stream,TAccountComp.AccountKey2RawString(FData.new_public_key)); 6
+    
+    Stream.Write(FData.locked_until_block,Sizeof(FData.locked_until_block));
+  end;
+  Stream.Write(FData.fee,Sizeof(FData.fee));
+  TStreamOp.WriteAnsiString(Stream,FData.payload);
+  TStreamOp.WriteAnsiString(Stream,FData.sign.r);
+  TStreamOp.WriteAnsiString(Stream,FData.sign.s);
+  r:=TStreamOp.SaveStreamToRaw(Stream);
+	 * 
+	 * DAEE0100 34CF0800 36000000 80969800 00000000 E8030000 640000000000000054657374696E67206C6973744163636F756E74466F7253616C65 00000000000000000000000004
+	 * signer   to sell   noper    price             payed    fee						ECNIC
+	 * DAEE0100 34CF0800 37000000 8096980000000000 DAEE0100 0100000000000000 54455354 000000000000000000000000 04
+	 * 1000 = E803
+	 * 577332 = 34CF08
+	 * 
+	 * DAEE0100 34CF0800 38000000 80969800 00000000 DAEE0100 0100000000000000 54455354  00000000 00000000 040F0400 04
+	 * 
+	 * 
+	 * unction TOpListAccount.SaveOpToStream(Stream: TStream; SaveExtendedData : Boolean): Boolean;
+Var w : Word;
+    r : TRawBytes;
+begin
+  Stream.Write(FData.account_signer,Sizeof(FData.account_signer));
+  Stream.Write(FData.account_target,Sizeof(FData.account_target));
+  case FData.operation_type of
+    lat_ListForSale : w := CT_Op_ListAccountForSale;
+    lat_DelistAccount : w := CT_Op_DelistAccount;
+  else raise Exception.Create('ERROR DEV 20170412-1');
+  end;
+  Stream.Write(w,2);
+  Stream.Write(FData.n_operation,Sizeof(FData.n_operation));
+  if FData.operation_type=lat_ListForSale then begin
+    Stream.Write(FData.account_price,Sizeof(FData.account_price));
+    Stream.Write(FData.account_to_pay,Sizeof(FData.account_to_pay));
+    
+    Stream.Write(FData.public_key.EC_OpenSSL_NID,Sizeof(FData.public_key.EC_OpenSSL_NID));6
+    TStreamOp.WriteAnsiString(Stream,FData.public_key.x);
+    TStreamOp.WriteAnsiString(Stream,FData.public_key.y);
+    
+    TStreamOp.WriteAnsiString(Stream,TAccountComp.AccountKey2RawString(FData.new_public_key)); 6
+    
+    Stream.Write(FData.locked_until_block,Sizeof(FData.locked_until_block));
+  end;
+  Stream.Write(FData.fee,Sizeof(FData.fee));
+  TStreamOp.WriteAnsiString(Stream,FData.payload);
+  TStreamOp.WriteAnsiString(Stream,FData.sign.r);
+  TStreamOp.WriteAnsiString(Stream,FData.sign.s);
+  r:=TStreamOp.SaveStreamToRaw(Stream);
+  TLog.NewLog(lterror,ClassName,Format('TOpListAccount.SaveOpToStream:%s',[TCrypto.ToHexaString(r)]));
+  Result := true;
+end;           
+	 * 
+	 * 
+	 * 
+	 * DAEE0100 34CF0800 0400360000008096980000000000E803000000000000000006000000000000000000000064000000000000001A0054657374696E67206C6973744163636F756E74466F7253616C652000A3F5AB8AB8308677ABF6660E193916CB7E1D8601008A85CB266E271E7A897BD22000F48824FAAB5EEC8601E223803268E7EA13DEEEC96D84488AC06733F90357D143
 	 * Example:
 NOTE: The private keys, and values shown at this example are tested and works. This is a REAL example with REAL values.
 Account 3700-88 wants to send 3.5 PASC to account 7890-83 with a payload data "EXAMPLE" non encrypted (public payload)

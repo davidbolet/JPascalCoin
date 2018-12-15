@@ -1,4 +1,5 @@
 package com.github.davidbolet.jpascalcoin.crypto.model;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -22,7 +23,8 @@ import com.github.davidbolet.jpascalcoin.common.model.KeyType;
 import com.github.davidbolet.jpascalcoin.common.model.PascPublicKey;
 import com.github.davidbolet.jpascalcoin.common.model.PayLoadEncryptionMethod;
 
-public class TransferOperationIT {
+public class DelistAccountOperationIT {
+	
 	static Properties props = new Properties();
 	
 	PascalCoinClient client;
@@ -31,7 +33,6 @@ public class TransferOperationIT {
 	
 	String privateKey1;
 	String privateKeyEnc;
-
 	@BeforeClass
 	public static void loadCommons() throws IOException {
 		String path="test/resources/jPascalcoin-crypto-test.properties";
@@ -53,17 +54,15 @@ public class TransferOperationIT {
 			getIntProperty(props, "jPascalcoin.client.logLevel", 1));
 
 		password=props.getProperty("jPascalcoin.wallet.password");
-
-		privateKey1 = props.getProperty("jPascalcoin.test.privateKey.mainNetwork1");
-		privateKeyEnc= props.getProperty("jPascalcoin.test.privateKey.mainNetwork1.encoded");
 		pwd=props.getProperty("jPascalcoin.test.privateKey.password");
-		//Initially unlock wallet for the test
+		privateKeyEnc=props.getProperty("jPascalcoin.test.privateKey.mainNetwork3.encoded");
+		
+		//Initially unlock wallet,
 		client.unlock(password);
 	}
 	
 	@Test
-	public void create_and_execute_transfer() {
-		
+	public void create_and_execute_delist_account() {
 		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
 		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
 		PascPublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
@@ -75,16 +74,17 @@ public class TransferOperationIT {
 		}
 		assertTrue(result.size()>0); 
 		
-		Account account = result.get(0);
+		Account account = result.get(7);
+		System.out.println(String.format("Account %s has name %s and balance %.4f", account.getAccount(),account.getName(),account.getBalance()));
+		Account payer=client.getAccount(126682);
 		
-		Account receiver= client.getAccount(3532);
-		PascPublicKey receiverPK=PascPublicKey.fromEncodedPubKey(receiver.getEncPubkey());
+		DelistAccountOperation operation = new DelistAccountOperation( 577332, payer.getAccount(), publicKey, payer.getnOperation()+1, 0.0001,"TEST".getBytes(), PayLoadEncryptionMethod.NONE, null);
 		
-		TransferOperation operation = new TransferOperation(account.getAccount(),receiver.getAccount(),publicKey,receiverPK, account.getnOperation()+1, 0.0001, 0.0001, "TEST".getBytes(), PayLoadEncryptionMethod.NONE, null);
 		byte[] opDigest=operation.generateOpDigest(4.0f);
 		OfflineSignResult res=key.sign(opDigest);
-
-		String rawOps=operation.getRawOperations(res.getStringR(), res.getStringS());
+		System.out.println("Digest to sign:"+operation.getFinalHash()); 
+		
+		String rawOps=operation.getRawOperations(res.getStringR().toUpperCase(), res.getStringS().toUpperCase());
 		System.out.println("R:"+res.getStringR());
 		System.out.println("S:"+res.getStringS());
 		System.out.println(rawOps);
@@ -93,10 +93,10 @@ public class TransferOperationIT {
 		
 		List<Operation> ops=client.operationsInfo(rawOps);
 		assertTrue(ops!=null && ops.size()>0); 
-		//Uncomment next 2 lines if you want to really execute
-//		List<Operation> ops2=client.executeOperations(rawOps);
-//		assertTrue(ops2!=null && ops2.size()>0 && ops2.get(0).getValid()==null); 
+		List<Operation> ops2=client.executeOperations(rawOps);
+		assertTrue(ops2!=null && ops2.size()>0 && ops2.get(0).getValid()==null); 
 	}
+	
 
 	
 	private int getIntProperty(Properties props, String key, int defaultValue) {

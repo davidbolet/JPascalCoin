@@ -116,11 +116,14 @@ static Properties props = new Properties();
 		String pk=privateKey2Encoded;		
 		
 		//Encryption TEST
-//		String encrypt=OpenSslAes.encrypt("12345678", privateKey);
-//		assertEquals(encrypt,pk);
-		//Decryptiom TEST
+		String encrypt=OpenSslAes.encrypt("12345678", privateKey);
+		//assertEquals(encrypt,pk);
+		//Decryption TEST
 		String decrypt=OpenSslAes.decrypt("12345678", pk);
+		String decrypt2=OpenSslAes.decrypt("12345678", encrypt);
+		
 		assertEquals(privateKey, decrypt.substring(8));
+		assertEquals(privateKey, decrypt2);
 		KeyType type=KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(decrypt.substring(0,4)));
 		//Private Key import TEST
 		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey, type);

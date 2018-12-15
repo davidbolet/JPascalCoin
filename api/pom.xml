@@ -3,11 +3,11 @@
   <parent>
     <groupId>com.github.davidbolet.jpascalcoin</groupId>
     <artifactId>jPascalcoin</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
   </parent>
-
-  <artifactId>jPascalcoin-api</artifactId>
-  <name>jPascalcoin-api</name>
+  
+  <artifactId>api</artifactId>
+  <name>api</name>
   <packaging>jar</packaging>
 
   <url>https://github.com/davidbolet/JPascalCoin</url>
@@ -46,11 +46,25 @@
 	    <artifactId>junit</artifactId>
 	    <version>4.12</version>
 	</dependency>
-
+    <dependency>
+    	<groupId>com.github.davidbolet.jpascalcoin</groupId>
+    	<artifactId>common</artifactId>
+    	<version>4.0.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
   <build>
-     <finalName>jPascalcoin-api</finalName>
+     <finalName>api</finalName>
+     <testSourceDirectory>test</testSourceDirectory>
+     <sourceDirectory>src</sourceDirectory>
+     <resources>
+     <resource>
+     <directory>${project.basedir}</directory>
+        <includes>
+            <include>test/resources/jPascalcoin-test.properties</include>
+        </includes>
+     </resource>
+     </resources>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -140,5 +154,4 @@
 			<timezone>+1</timezone>
 		</developer>
 	</developers>
-
 </project>

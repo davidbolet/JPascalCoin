@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -16,6 +17,11 @@ import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClient;
 import com.github.davidbolet.jpascalcoin.api.client.PascalCoinClientImpl;
 import com.github.davidbolet.jpascalcoin.api.constants.PascalCoinConstants;
 import com.github.davidbolet.jpascalcoin.api.model.Account;
+import com.github.davidbolet.jpascalcoin.api.model.AccountKey;
+import com.github.davidbolet.jpascalcoin.api.model.MultiOperation;
+import com.github.davidbolet.jpascalcoin.api.model.OpChanger;
+import com.github.davidbolet.jpascalcoin.api.model.OpReceiver;
+import com.github.davidbolet.jpascalcoin.api.model.OpSender;
 import com.github.davidbolet.jpascalcoin.api.model.Operation;
 import com.github.davidbolet.jpascalcoin.common.helper.CryptoUtils;
 import com.github.davidbolet.jpascalcoin.common.helper.HexConversionsHelper;
@@ -75,20 +81,17 @@ public class ChangeAccountOperationIT {
 		}
 		assertTrue(result.size()>0); 
 		
-		Account account = result.get(8);
+		Account account = result.get(7);
 		System.out.println(String.format("Account %s has name %s and balance %.4f", account.getAccount(),account.getName(),account.getBalance()));
+		Account payer=client.getAccount(126682);
 		
-		ChangeAccountOperation operation = new ChangeAccountOperation( account.getAccount(),publicKey, 126682, account.getnOperation()+1, 0.0001,null,null,0, "TEST".getBytes(), PayLoadEncryptionMethod.NONE, null);
-		byte[] opDigest=operation.generateOpDigest(3.0f);
+		
+		ChangeAccountOperation operation = new ChangeAccountOperation( 580902 ,publicKey,payer.getAccount(), payer.getnOperation()+1, 0.0001,null,null,1, "TEST".getBytes(), PayLoadEncryptionMethod.AES, "123456");
+		byte[] opDigest=operation.generateOpDigest(4.0f);
 		OfflineSignResult res=key.sign(opDigest);
-		System.out.println("Digest to sign:"+operation.getFinalHash());
+		System.out.println("Digest to sign:"+operation.getFinalHash()); 
 		
 		String ourHash=""+CryptoUtils.getSHA256(operation.getFinalHash());
-		String pascalHash="00000000DAEE01002F0000001B632555BA363E2975F980743705ABF048DD67FB";
-						   
-						   
-		assertEquals(pascalHash,ourHash.toUpperCase());
-		
 		
 		String rawOps=operation.getRawOperations(res.getStringR().toUpperCase(), res.getStringS().toUpperCase());
 		System.out.println("R:"+res.getStringR());
@@ -99,9 +102,10 @@ public class ChangeAccountOperationIT {
 		
 		List<Operation> ops=client.operationsInfo(rawOps);
 		assertTrue(ops!=null && ops.size()>0); 
-//		List<Operation> ops2=client.executeOperations(rawOps);
-//		assertTrue(ops2!=null && ops2.size()>0 && ops2.get(0).getValid()==null); 
+		List<Operation> ops2=client.executeOperations(rawOps);
+		assertTrue(ops2!=null && ops2.size()>0 && ops2.get(0).getValid()==null); 
 	}
+	
 
 	
 	private int getIntProperty(Properties props, String key, int defaultValue) {
