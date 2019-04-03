@@ -242,6 +242,7 @@ public class PascPublicKey implements Serializable {
 		sy=bcPub.substring(76);
 		pk.setX(sx);
 		pk.setY(sy);
+		pk.setKeyType(KeyType.SECP256K1);
 		//pk.setName(name);
 		pk.setEncPubKey(bcPub);
 		pk.setCanUse(true); //However, the wallet doesn't have the private key, as we only have it 

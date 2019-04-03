@@ -9,9 +9,12 @@
 //
 //import org.junit.Before;
 //import org.junit.Test;
+//import org.spongycastle.crypto.util.PublicKeyFactory;
 //
+////
 //import com.github.davidbolet.jpascalcoin.common.helper.HexConversionsHelper;
 //import com.github.davidbolet.jpascalcoin.common.model.KeyType;
+//import com.github.davidbolet.jpascalcoin.common.model.PascPublicKey;
 //import com.github.davidbolet.jpascalcoin.common.model.PayLoadEncryptionMethod;
 //import com.github.davidbolet.jpascalcoin.common.model.PublicKey;
 //import com.github.davidbolet.jpascalcoin.crypto.model.PascPrivateKey;
@@ -65,13 +68,13 @@
 //		//Initially unlock wallet,
 //		client.unlock(password);
 //	}
-//	
-
-//	
-//	
-
-//	
-//	
+////	
+//
+////	
+////	
+//
+////	
+////	
 //	@Test
 //	public void testSignature() throws Exception {
 //		String privateKey="37B799726961D231492823513F5686B3F7C7909DEFF20907D91BF4D24A356624";
@@ -93,88 +96,88 @@
 //		assertEquals("1F9462CA6FA8FB39DC309F2EF3A6EB8AE9B2538D4EB62055A316692CCEA1557F",publicKey.getX());
 //		assertEquals("42FFDCCF7ACEA4685EEC3C0A9F9B223636CF257902693933FB0D1EC14A6C519B",publicKey.getY());
 //		
-//		PublicKey pk2=PublicKey.fromECPublicKey(publicKey.getECPublicKey());
+//		PublicKeyFactory pk2=PublicKey.fromECPublicKey(publicKey.getECPublicKey());
 //		assertEquals("42FFDCCF7ACEA4685EEC3C0A9F9B223636CF257902693933FB0D1EC14A6C519B", pk2.getY());
 //		assertEquals(publicKey.getBase58PubKey(),pk2.getBase58PubKey());
 //		
-//		PascPrivateKey.SignResult signed = key.sign(toSign);
+//		SignResult signed = key.sign(toSign);
 //		System.out.println(signed);
-//		PascPrivateKey.SignResult signature3=key.sign(toSign);
+//		SignResult signature3=key.sign(toSign);
 //		System.out.println(signature3.getStringSignature());
 //
 //		String rawOperations=transferOperation.getRawOperations(signed.getStringR(), signed.getStringS());
 //		System.out.println(rawOperations);
-//		SignResult res= client.signMessage(HexConversionsHelper.byteToHex(toSign), pk2.getEncPubKey(), null);
+//		com.github.davidbolet.jpascalcoin.common.model.SignResult res= client.signMessage(HexConversionsHelper.byteToHex(toSign), pk2.getEncPubKey(), null);
 //		System.out.println(res.getSignature());
 //		System.out.println(signed.getPascSignature());
 //		client.verifySign(HexConversionsHelper.byteToHex(toSign), pk2.getEncPubKey(), signed.getPascSignature());
 //	}
-//	
-//	@Test
-//	public void testSignAndVerifySign() throws NoSuchAlgorithmException
-//	{
-//		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
-//		String pwd ="L1L0kio10";
-//		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
-//		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
-//		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null); //bouncyCastleKeyHelper
-//		assertEquals(key.getPublicKey().getBase58PubKey(),publicKey.getBase58PubKey());
-//		
-//		String toSign="This is the text that will be signed";
-//		
-//		String hex=HexConversionsHelper.getSHA256(toSign);
-//		
-// 		SignResult res= client.signMessage(hex, publicKey.getEncPubKey(), null);
-// 		assertTrue(res!=null);
-// 		
-// 		PascPrivateKey.SignResult signed = key.sign(toSign.getBytes()); // .sign(toSign.getBytes(), bouncyCastleKeyHelper);
-// 		
-//		System.out.println("Pascal signature:"+res.getSignature());
-//		System.out.println("Java signature:"+signed.getStringSignature());
-//		System.out.println("Verifying Java signature:");
-//		
-//		System.out.println(signed.getR().toString(16).toUpperCase());
-//		System.out.println(signed.getS().toString(16).toUpperCase());
-//		System.out.println(publicKey.verify(signed.getSignature(), toSign.getBytes()));
-//		PascPrivateKey.SignResult jSignature=new PascPrivateKey.SignResult(PascPrivateKey.getDerEncodedSignature(signed.getR(), signed.getS()));
-//		System.out.println(publicKey.verify(jSignature.getSignature(), toSign.getBytes()));
-//		
-//		System.out.println("Verifying Pascal signature:");
-//		res = client.verifySign(hex, publicKey.getEncPubKey(), res.getSignature());
-//		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
-//		
-//		String cR="B02E85DB1363771354DB67263915E049E22A713EA7B932AF11FA833D623C5A35";
-//		String cS="96198EB4A99EB727D0DD31FCBBB0F38218A899675E765ABE7793E03787FCA7A9";
-//		BigInteger R=new BigInteger(cR,16);
-//		BigInteger S=new BigInteger(cS,16);
-//		
-//		String cDerSignature="3046022100b02e85db1363771354db67263915e049e22a713ea7b932af11fa833d623c5a3502210096198eb4a99eb727d0dd31fcbbb0f38218a899675e765abe7793e03787fca7a9";
-//		
-//		assertEquals(HexConversionsHelper.byteToHex(PascPrivateKey.getDerEncodedSignature(R, S)),cDerSignature);
-//		
-//		System.out.println("Verifying C signature in java:");
-//		PascPrivateKey.SignResult cSignature=new PascPrivateKey.SignResult(HexConversionsHelper.decodeStr2Hex(cDerSignature));
-//		System.out.println("R and S from signature in java:");
-//		System.out.println(cSignature.getStringR());
-//		System.out.println(cSignature.getStringS());
-//		System.out.println(publicKey.verify(cSignature.getSignature(), toSign.getBytes()));
-//		
-//		System.out.println("Verifying C signature in pascal:");
-//		res = client.verifySign(hex, publicKey.getEncPubKey(), cSignature.getPascSignature());
-//		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
-//		System.out.println("Verifying Java signature:");
-//		res = client.verifySign(hex, publicKey.getEncPubKey(), signed.getPascSignature());
-//		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
-//		
-//	}
-//		
+////	
+////	@Test
+////	public void testSignAndVerifySign() throws NoSuchAlgorithmException
+////	{
+////		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
+////		String pwd ="L1L0kio10";
+////		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
+////		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
+////		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null); //bouncyCastleKeyHelper
+////		assertEquals(key.getPublicKey().getBase58PubKey(),publicKey.getBase58PubKey());
+////		
+////		String toSign="This is the text that will be signed";
+////		
+////		String hex=HexConversionsHelper.getSHA256(toSign);
+////		
+//// 		SignResult res= client.signMessage(hex, publicKey.getEncPubKey(), null);
+//// 		assertTrue(res!=null);
+//// 		
+//// 		PascPrivateKey.SignResult signed = key.sign(toSign.getBytes()); // .sign(toSign.getBytes(), bouncyCastleKeyHelper);
+//// 		
+////		System.out.println("Pascal signature:"+res.getSignature());
+////		System.out.println("Java signature:"+signed.getStringSignature());
+////		System.out.println("Verifying Java signature:");
+////		
+////		System.out.println(signed.getR().toString(16).toUpperCase());
+////		System.out.println(signed.getS().toString(16).toUpperCase());
+////		System.out.println(publicKey.verify(signed.getSignature(), toSign.getBytes()));
+////		PascPrivateKey.SignResult jSignature=new PascPrivateKey.SignResult(PascPrivateKey.getDerEncodedSignature(signed.getR(), signed.getS()));
+////		System.out.println(publicKey.verify(jSignature.getSignature(), toSign.getBytes()));
+////		
+////		System.out.println("Verifying Pascal signature:");
+////		res = client.verifySign(hex, publicKey.getEncPubKey(), res.getSignature());
+////		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
+////		
+////		String cR="B02E85DB1363771354DB67263915E049E22A713EA7B932AF11FA833D623C5A35";
+////		String cS="96198EB4A99EB727D0DD31FCBBB0F38218A899675E765ABE7793E03787FCA7A9";
+////		BigInteger R=new BigInteger(cR,16);
+////		BigInteger S=new BigInteger(cS,16);
+////		
+////		String cDerSignature="3046022100b02e85db1363771354db67263915e049e22a713ea7b932af11fa833d623c5a3502210096198eb4a99eb727d0dd31fcbbb0f38218a899675e765abe7793e03787fca7a9";
+////		
+////		assertEquals(HexConversionsHelper.byteToHex(PascPrivateKey.getDerEncodedSignature(R, S)),cDerSignature);
+////		
+////		System.out.println("Verifying C signature in java:");
+////		PascPrivateKey.SignResult cSignature=new PascPrivateKey.SignResult(HexConversionsHelper.decodeStr2Hex(cDerSignature));
+////		System.out.println("R and S from signature in java:");
+////		System.out.println(cSignature.getStringR());
+////		System.out.println(cSignature.getStringS());
+////		System.out.println(publicKey.verify(cSignature.getSignature(), toSign.getBytes()));
+////		
+////		System.out.println("Verifying C signature in pascal:");
+////		res = client.verifySign(hex, publicKey.getEncPubKey(), cSignature.getPascSignature());
+////		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
+////		System.out.println("Verifying Java signature:");
+////		res = client.verifySign(hex, publicKey.getEncPubKey(), signed.getPascSignature());
+////		System.out.println(String.format("Digest: %s, Signature: %s, EncPubKey: %s", res.getDigest(),res.getSignature(),res.getEncPubkey()));
+////		
+////	}
+////		
 //	@Test
 //	public void testSignatureMiniTransfer() {
 //		String privateKeyEnc="53616C7465645F5FAB4777157A524C4D7CB71BD05C5A56B6F151ECADA6F3D95AC90FF174BE71666CF40F7EAB6995E75FFEBA1C69D76398BD0EFCE8F61AAB1F46";
 //		String pwd ="L1L0kio10";
-//		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
+//		String privateKey=com.github.davidbolet.jpascalcoin.common.helper.OpenSslAes.decrypt(pwd, privateKeyEnc);
 //		PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
-//		PublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
+//		PascPublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
 //		assertEquals(key.getPublicKey().getBase58PubKey(),publicKey.getBase58PubKey());
 //		List<Account> result = client.getWalletAccounts(null, key.getPublicKey().getBase58PubKey(), null, null);
 //		for(Account account:result)

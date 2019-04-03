@@ -97,8 +97,13 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	
 	public PascalCoinClientImpl(String server, Short port, Integer log)
 	{
+		this("http://"+server+":"+port,log);
+	}
+	
+	public PascalCoinClientImpl(String baseUrl, Integer log)
+	{
 		super();
-		this.baseUrl="http://"+server+":"+port;
+		this.baseUrl=baseUrl;
 		pascalCoinService=getRetrofit(log).create(PascalCoinService.class);
 		logger.setLevel(Level.ALL);
 	}
@@ -235,9 +240,9 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (exact!=null)
 			params.put("exact", exact);
 		if (encPubKey!=null && !"".equals(encPubKey))
-			params.put("encPubKey", encPubKey);
+			params.put("enc_pubkey", encPubKey);
 		if (b58PubKey!=null && !"".equals(b58PubKey))
-			params.put("b58PubKey", b58PubKey);
+			params.put("b58_pubkey", b58PubKey);
 		if (minBalance!=null)
 			params.put("min_balance", minBalance);
 		if (maxBalance!=null)
@@ -274,9 +279,9 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		if (listed!=null)
 			params.put("listed", listed);
 		if (encPubKey!=null && !"".equals(encPubKey))
-			params.put("encPubKey", encPubKey);
+			params.put("enc_pubkey", encPubKey);
 		if (b58PubKey!=null && !"".equals(b58PubKey))
-			params.put("b58PubKey", b58PubKey);
+			params.put("b58_pubkey", b58PubKey);
 		if (exact!=null)
 			params.put("exact", exact);
 		if (minBalance!=null)
@@ -490,6 +495,20 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	}
 
 	@Override
+	public void getWalletCoinsAsync(String encPubKey, String b58PubKey, Callback<OpResult<Double>> getWalletCoinsCallback){
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getwalletcoins");
+		if (encPubKey!=null)
+			params.put("enc_pubkey", encPubKey);
+		if (b58PubKey!=null)
+			params.put("b58_pubkey", b58PubKey);
+		body.put("params",params);
+		Call<OpResult<Double>> walletCoinsCall= pascalCoinService.getWalletCoins(body);
+		walletCoinsCall.enqueue(getWalletCoinsCallback);
+	}
+	
+	@Override
 	public Block getBlock(Integer block) {
 		Block result = null;
 		Map<String,Object> body = getRPCBody();
@@ -511,6 +530,18 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void getBlockAsync(Integer block, Callback<OpResult<Block>> getBlockCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getblock");
+		if (block!=null)
+			params.put("block", block);
+		body.put("params",params);
+		Call<OpResult<Block>> getBlockCall= pascalCoinService.getBlock(body);
+		getBlockCall.enqueue(getBlockCallback);
 	}
 
 	@Override
@@ -544,6 +575,24 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	}
 
 	@Override
+	public void getBlocksAsync(Integer last, Integer start, Integer end, Callback<OpResult<List<Block>>> getBlocksCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getblocks");
+		if (last!=null && (start!=null || end!=null))
+			throw new IllegalArgumentException("Cannot specify both last and start/end arguments");
+		if (last!=null)
+			params.put("last", last);
+		if (start!=null)
+			params.put("start", start);
+		if (end!=null)
+			params.put("end", end);
+		body.put("params",params);
+		Call<OpResult<List<Block>>> getBlocksCall= pascalCoinService.getBlocks(body);
+		getBlocksCall.enqueue(getBlocksCallback);
+	}
+	
+	@Override
 	public Integer getBlockCount() {
 		Integer result = null;
 		Map<String,Object> body = getRPCBody();
@@ -565,7 +614,19 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
-
+	
+	@Override
+	public void getBlockCountAsync(Callback<OpResult<Integer>> getBlockCountCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getblockcount");
+		
+		body.put("params",params);
+		Call<OpResult<Integer>> blockCountCall= pascalCoinService.getBlockCount(body);
+		blockCountCall.enqueue(getBlockCountCallback);
+	}
+	
+	
 	@Override
 	public Operation getBlockOperation(Integer block, Integer opblock) {
 		Operation result = null;
@@ -590,6 +651,20 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void getBlockOperationAsync(Integer block, Integer opblock,Callback<OpResult<Operation>> getBlockOperationCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getblockoperation");
+		if (block==null || opblock==null)
+			throw new IllegalArgumentException("Block num and operation number are mandatory arguments");
+		params.put("block", block);
+		params.put("opblock", opblock);
+		body.put("params",params);
+		Call<OpResult<Operation>> blockOperationCall= pascalCoinService.getBlockOperation(body);
+		blockOperationCall.enqueue(getBlockOperationCallback);
 	}
 
 	@Override
@@ -621,6 +696,23 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		return result;
 	}
 
+	@Override
+	public void getBlockOperationsAsync(Integer block,Integer start, Integer max,Callback<OpResult<List<Operation>>> getBlockOperationsCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getblockoperations");
+		if (block==null )
+			throw new IllegalArgumentException("Block param is mandatory");
+		params.put("block", block);
+		if (start!=null)
+			params.put("start", start);
+		if (max!=null)
+			params.put("max", max);
+		body.put("params",params);
+		Call<OpResult<List<Operation>>> blockOperationsCall= pascalCoinService.getBlockOperations(body);
+		blockOperationsCall.enqueue(getBlockOperationsCallback);
+	}
+	
 	@Override
 	public List<Operation> getAccountOperations(Integer account, Integer depth, Integer start, Integer max) {
 		return getAccountOperations( account, 0,  depth,  start,  max);
@@ -658,6 +750,27 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public void getAccountOperationsAsync(Integer account, Integer startblock, Integer depth, Integer start, Integer max,Callback<OpResult<List<Operation>>> getAccountOperationsCallBack) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getaccountoperations");
+		if (account==null)
+			throw new IllegalArgumentException("Account param is mandatory");
+		params.put("account", account);
+		if (startblock!=null)
+			params.put("startblock", startblock);
+		if (depth!=null)
+			params.put("depth", depth);
+		if (start!=null)
+			params.put("start", start);
+		if (max!=null)
+			params.put("max", max);
+		body.put("params",params);
+		Call<OpResult<List<Operation>>> accountOperationsCall= pascalCoinService.getAccountOperations(body);
+		accountOperationsCall.enqueue(getAccountOperationsCallBack);
+	}
 
 	@Override
 	public List<Operation> getPendings() {
@@ -682,6 +795,16 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 	}
 	
 	@Override
+	public void getPendingsAsync(Callback<OpResult<List<Operation>>> getPendingsCallBack) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getpendings");
+		body.put("params",params);
+		Call<OpResult<List<Operation>>> pendingOperationsCall= pascalCoinService.getPendings(body);
+		pendingOperationsCall.enqueue(getPendingsCallBack);
+	}
+	
+	@Override
 	public Integer getPendingsCount() {
 		Integer result = 0;
 		Map<String,Object> body = getRPCBody();
@@ -703,6 +826,15 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		return result;
 	}
 	
+	@Override
+	public void getPendingsCountAsync(Callback<OpResult<Integer>> getPendingsCountCallBack) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","getpendingscount");
+		body.put("params",params);
+		Call<OpResult<Integer>> pendingOperationsCall= pascalCoinService.getPendingsCount(body);
+		pendingOperationsCall.enqueue(getPendingsCountCallBack);
+	}
 
 	@Override
 	public Operation findOperation(String ophash) {
@@ -728,6 +860,20 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void findOperationAsync(String ophash, Callback<OpResult<Operation>> findNOperationCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","findoperation");
+		if (ophash==null)
+			throw new IllegalArgumentException("Operation hash param is mandatory");
+		params.put("ophash", ophash);
+		
+		body.put("params",params);
+		Call<OpResult<Operation>> findOperationCall= pascalCoinService.findOperation(body);
+		findOperationCall.enqueue(findNOperationCallback);
 	}
 
 	@Override
@@ -757,6 +903,23 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void findNOperationAsync(Integer account,Integer nOperation, Callback<OpResult<Operation>> findNOperationsCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","findnoperation");
+		if (account==null)
+			throw new IllegalArgumentException("Account param is mandatory");
+		params.put("account", account);
+		if (nOperation==null)
+			throw new IllegalArgumentException("n_operation param is mandatory");
+		params.put("n_operation", nOperation);
+		
+		body.put("params",params);
+		Call<OpResult<Operation>> findOperationCall= pascalCoinService.findNOperation(body);
+		findOperationCall.enqueue(findNOperationsCallback);
 	}
 	
 	@Override
@@ -792,6 +955,29 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void findNOperationsAsync(Integer account, Integer nOperationMin, Integer nOperationMax, Integer startBlock, Callback<OpResult<List<Operation>>> findNOperationsCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","findnoperations");
+		if (account==null)
+			throw new IllegalArgumentException("Account param is mandatory");
+		params.put("account", account);
+		if (nOperationMin==null)
+			throw new IllegalArgumentException("n_operation_min param is mandatory");
+		params.put("n_operation_min", nOperationMin);
+		if (nOperationMax==null)
+			throw new IllegalArgumentException("n_operation_max param is mandatory");
+		params.put("n_operation_max", nOperationMax);
+		if (startBlock==null)
+			params.put("start_block", 0);
+		else
+			params.put("start_block", startBlock);
+		body.put("params",params);
+		Call<OpResult<List<Operation>>> findOperationsCall= pascalCoinService.findNOperations(body);
+		findOperationsCall.enqueue(findNOperationsCallback);
 	}
 	
 	@Override
@@ -864,6 +1050,38 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public void changeAccountInfoAsync(Integer accountTarget, Integer accountSigner, String newEncPubKey, String newB58PubKey, String newName, Short newType, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>> changeAccountInfoCallback){
+		if (newEncPubKey!=null && newB58PubKey!=null)
+			throw new IllegalArgumentException("Cannot specify both newEncPubKey and newB58PubKey");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","changeaccountinfo");
+		if (newEncPubKey!=null)
+			params.put("new_enc_pubkey", newEncPubKey);
+		if (newB58PubKey!=null)
+			params.put("new_b58_pubkey", newB58PubKey);
+		if (accountTarget!=null)
+			params.put("account_target", accountTarget);
+		if (accountSigner!=null)
+			params.put("account_signer", accountSigner);
+		if (newName!=null)
+			params.put("new_name", newName);
+		if (newType!=null)
+			params.put("new_type", newType);
+		params.put("fee", fee);	
+		if (payload!=null)
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
+		if (payloadMethod!=null)
+			params.put("payload_method", payloadMethod);	
+		if (pwd!=null)
+			params.put("pwd", pwd);			
+		body.put("params",params);
+		Call<OpResult<Operation>> changeAccountInfoCall= pascalCoinService.changeAccountInfo(body);
+		changeAccountInfoCall.enqueue(changeAccountInfoCallback);
+	}
+	
 
 	@Override
 	public Operation sendTo(Integer sender, Integer target, Double amount, Double fee, byte[] payload,
@@ -898,6 +1116,28 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void sendToAsync(Integer sender, Integer target, Double amount, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>> sendToCallback) {
+		if (sender==null||target==null||amount==null||fee==null)
+			throw new IllegalArgumentException("Missing mandatory params. sender,target, amount and fee are mandatory");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","sendto");
+		params.put("sender", sender);
+		params.put("target", target);
+		params.put("amount", amount);
+		params.put("fee", fee);	
+		if (payload!=null)
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
+		if (payloadMethod!=null)
+			params.put("payload_method", payloadMethod.getValue());	
+		if (pwd!=null)
+			params.put("pwd", pwd);			
+		body.put("params",params);
+		Call<OpResult<Operation>> sendToCall= pascalCoinService.sendTo(body);
+		sendToCall.enqueue(sendToCallback);
 	}
 
 	@Override
@@ -939,6 +1179,33 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public void changeKeyAsync(Integer account, Integer accountSigner, String newEncPubKey, String newB58PubKey, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>>  changeKeyCallback) {
+		if (newEncPubKey!=null && newB58PubKey!=null)
+			throw new IllegalArgumentException("Cannot specify both newEncPubKey and newB58PubKey");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","changekey");
+		if (newEncPubKey!=null)
+			params.put("new_enc_pubkey", newEncPubKey);
+		if (newB58PubKey!=null)
+			params.put("new_b58_pubkey", newB58PubKey);
+		if (account!=null)
+			params.put("account", account);
+		if (accountSigner!=null)
+			params.put("account_signer", accountSigner);
+		params.put("fee", fee);	
+		if (payload!=null)
+			params.put("payload",HexConversionsHelper.byteToHex(payload));		
+		if (payloadMethod!=null)
+			params.put("payload_method", payloadMethod);	
+		if (pwd!=null)
+			params.put("pwd", pwd);			
+		body.put("params",params);
+		Call<OpResult<Operation>> changeKeyCall= pascalCoinService.changeKey(body);
+		changeKeyCall.enqueue(changeKeyCallback);
+	}
 
 	@Override
 	public List<Operation> changeKeys(String accounts, String newEncPubKey, String newB58PubKey, Double fee,
@@ -976,6 +1243,31 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void changeKeysAsync(String accounts, String newEncPubKey, String newB58PubKey, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<List<Operation>>>  changeKeysCallback) {
+		if (newEncPubKey!=null && newB58PubKey!=null)
+			throw new IllegalArgumentException("Cannot specify both newEncPubKey and newB58PubKey");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","changekeys");
+		if (newEncPubKey!=null)
+			params.put("new_enc_pubkey", newEncPubKey);
+		if (newB58PubKey!=null)
+			params.put("new_b58_pubkey", newB58PubKey);
+		if (accounts!=null)
+			params.put("accounts", accounts);
+		params.put("fee", fee);	
+		if (payload!=null)
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
+		if (payloadMethod!=null)
+			params.put("payload_method", payloadMethod);	
+		if (pwd!=null)
+			params.put("pwd", pwd);			
+		body.put("params",params);
+		Call<OpResult<List<Operation>>> changeKeysCall= pascalCoinService.changeKeys(body);
+		changeKeysCall.enqueue(changeKeysCallback);
 	}
 
 	@Override
@@ -1021,6 +1313,36 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public void listAccountForSaleAsync(Integer accountTarget, Integer accountSigner, Double price, Integer sellerAccount, String newB58PubKey, String newEncPubKey, Integer lockedUntilBlock, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>>  listAccountForSaleCallback) {
+		if (newEncPubKey!=null && newB58PubKey!=null)
+			throw new IllegalArgumentException("Cannot specify both newEncPubKey and newB58PubKey");
+		if (accountTarget==null||accountSigner==null||price==null|| sellerAccount ==null)
+			throw new IllegalArgumentException("Missing mandatory parameters. At least parameters accountTarget,accountSigner, lockedUntilBlock, price and sellerAccount must be specified");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","listaccountforsale");
+		if (newEncPubKey!=null)
+			params.put("new_enc_pubkey", newEncPubKey);
+		if (newB58PubKey!=null)
+			params.put("new_b58_pubkey", newB58PubKey);
+		params.put("locked_until_block",lockedUntilBlock);
+		params.put("account_target", accountTarget);
+		params.put("account_signer", accountSigner);
+		params.put("price", price);
+		params.put("seller_account", sellerAccount);
+		params.put("fee", fee);	
+		if (payload!=null)
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
+		if (payloadMethod!=null)
+			params.put("payload_method", payloadMethod);	
+		if (pwd!=null)
+			params.put("pwd", pwd);			
+		body.put("params",params);
+		Call<OpResult<Operation>> listAccountForSaleCall= pascalCoinService.listAccountForSale(body);
+		listAccountForSaleCall.enqueue(listAccountForSaleCallback);
+	}
 
 	@Override
 	public Operation delistAccountForSale(Integer accountTarget, Integer accountSigner, Double fee, byte[] payload,
@@ -1056,6 +1378,27 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		return result;
 	}
 
+	@Override
+	public void delistAccountForSaleAsync(Integer accountTarget, Integer accountSigner, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>> delistAccountForSaleCallback) {
+		if (accountTarget==null||accountSigner==null||fee==null)
+			throw new IllegalArgumentException("Missing mandatory parameters. At least parameters accountTarget,accountSigner and fee must be specified");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","delistaccountforsale");
+		params.put("account_target", accountTarget);
+		params.put("account_signer", accountSigner);
+		params.put("fee", fee);	
+		if (payload!=null)
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
+		if (payloadMethod!=null)
+			params.put("payload_method", payloadMethod);	
+		if (pwd!=null)
+			params.put("pwd", pwd);			
+		body.put("params",params);
+		Call<OpResult<Operation>> delistAccountForSaleCall= pascalCoinService.delistAccountForSale(body);
+		delistAccountForSaleCall.enqueue(delistAccountForSaleCallback);
+	}
+	
 	@Override
 	public Operation buyAccount(Integer buyerAccount, Integer accountToPurchase, Double price, Integer sellerAccount,
 			String newB58PubKey, String newEncPubKey, Double amount, Double fee, byte[] payload,
@@ -1101,6 +1444,39 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void buyAccountAsync(Integer buyerAccount, Integer accountToPurchase, Double price, Integer sellerAccount, String newB58PubKey, String newEncPubKey, Double amount, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>> buyAccountCallback) {
+		if (buyerAccount==null||accountToPurchase==null||fee==null||price==null)
+			throw new IllegalArgumentException("Missing mandatory parameters. At least parameters accountTarget,accountSigner and fee must be specified");
+		if (newEncPubKey!=null && newB58PubKey!=null)
+			throw new IllegalArgumentException("Cannot specify both newEncPubKey and newB58PubKey");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","buyaccount");
+		if (newEncPubKey!=null)
+			params.put("new_enc_pubkey", newEncPubKey);
+		if (newB58PubKey!=null)
+			params.put("new_b58_pubkey", newB58PubKey);
+		if (buyerAccount!=null)
+			params.put("buyer_account", buyerAccount);
+		if (sellerAccount!=null)
+			params.put("seller_account", sellerAccount);		
+		if (accountToPurchase!=null)
+			params.put("account_to_purchase", accountToPurchase);
+		params.put("price", price);	
+		params.put("amount", amount);	
+		params.put("fee", fee);	
+		if (payload!=null)
+			params.put("payload", HexConversionsHelper.byteToHex(payload));		
+		if (payloadMethod!=null)
+			params.put("payload_method", payloadMethod);	
+		if (pwd!=null)
+			params.put("pwd", pwd);			
+		body.put("params",params);
+		Call<OpResult<Operation>> buyAccountCall= pascalCoinService.buyAccount(body);
+		buyAccountCall.enqueue(buyAccountCallback);
 	}
 
 	@Override
@@ -1431,6 +1807,19 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public void operationsInfoAsync(String rawOperations, Callback<OpResult<List<Operation>>> operationsInfoCallback) {
+		if (rawOperations==null)
+			throw new IllegalArgumentException("Missing rawOperations parameter");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","operationsinfo");
+		params.put("rawoperations", rawOperations);	
+		body.put("params",params);
+		Call<OpResult<List<Operation>>> operationsInfoCall= pascalCoinService.operationsInfo(body);
+		operationsInfoCall.enqueue(operationsInfoCallback);
+	}
 
 	@Override
 	public List<Operation> executeOperations(String rawOperations) {
@@ -1455,6 +1844,19 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void executeOperationsAsync(String rawOperations, Callback<OpResult<List<Operation>>> executeOperationsCallback) {
+		if (rawOperations==null)
+			throw new IllegalArgumentException("Missing rawOperations parameter");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","executeoperations");
+		params.put("rawoperations", rawOperations);	
+		body.put("params",params);
+		Call<OpResult<List<Operation>>> executeOperationsCall= pascalCoinService.executeOperations(body);
+		executeOperationsCall.enqueue(executeOperationsCallback);
 	}
 
 	@Override
@@ -1559,8 +1961,7 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
-	
-	
+
 
 	@Override
 	public String payloadEncrypt(String payload, String payloadMethod, String pwd, String encPubKey, String b58PubKey) {
@@ -1608,6 +2009,41 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public void payloadEncryptAsync(String payload, String payloadMethod, String pwd, String encPubKey, String b58PubKey, Callback<OpResult<String>> payloadEncryptCallback) {
+		if (payload==null || payloadMethod==null) throw new IllegalArgumentException("Params are mandatory");
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","payloadencrypt");
+		params.put("payload", HexConversionsHelper.byteToHex(payload.getBytes()));
+		if (!"aes".equals(payloadMethod) &&!"pubkey".equals(payloadMethod) && !"none".equals(payloadMethod))
+		{
+			throw new IllegalArgumentException("payloadMethod parameter can be only any of these: 'aes', 'none' or 'pubkey'");
+		}
+		if ("aes".equals(payloadMethod) && pwd ==null)
+		{
+			throw new IllegalArgumentException("pwd parameter is mandatory when payloadMethod is 'aes'");
+		}
+		if ("pubkey".equals(payloadMethod) && encPubKey==null && b58PubKey==null)
+		{
+			throw new IllegalArgumentException("You have to specify encPubKey or b58PubKey parameters when payloadMethod is 'pubkey'");
+		}
+		if ("pubkey".equals(payloadMethod) && encPubKey!=null && b58PubKey!=null)
+		{
+			throw new IllegalArgumentException("You have to specify encPubKey or b58PubKey parameters when payloadMethod is 'pubkey', but not both at the same time");
+		}
+		params.put("payload_method", payloadMethod);
+		if (encPubKey!=null)
+			params.put("enc_pubkey", encPubKey);
+		if (b58PubKey!=null)
+			params.put("b58_pubkey", b58PubKey);
+		if (pwd!=null)
+			params.put("pwd", pwd);
+		body.put("params",params);
+		Call<OpResult<String>> payloadEncryptCall= pascalCoinService.payloadEncrypt(body);
+		payloadEncryptCall.enqueue(payloadEncryptCallback);
+	}
 
 	@Override
 	public DecryptedPayload payloadDecrypt(String payload, String[] pwds) {
@@ -1633,6 +2069,20 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 		return result;
+	}
+	
+	@Override
+	public void payloadDecryptAsync(String payload, String[] pwds, Callback<OpResult<DecryptedPayload>> payloadDecryptCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","payloaddecrypt");
+		if (payload!=null)
+			params.put("payload", payload);
+		if (pwds!=null)
+			params.put("pwds", pwds);
+		body.put("params",params);
+		Call<OpResult<DecryptedPayload>> payloadDecryptCall= pascalCoinService.payloadDecrypt(body);
+		payloadDecryptCall.enqueue(payloadDecryptCallback);
 	}
 
 	@Override

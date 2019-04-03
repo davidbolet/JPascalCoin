@@ -133,13 +133,30 @@ public interface PascalCoinClient {
 			 * If use encPubKey and b58PubKey together and is not the same public key, will throw an error
 			 * @return Returns a PASCURRENCY value with maximum 4 Doubles */
 			Double getWalletCoins(String encPubKey, String b58PubKey);
+			
+			/**
+			 * Returns coins balance.
+			 * 
+			 * @param encPubKey: HEXASTRING (optional). If provided, return only this public key balance
+			 * @param b58PubKey: String (optional). If provided, return only this public key balance 
+			 * If use encPubKey and b58PubKey together and is not the same public key, will throw an error
+			 * @param getWalletCoinsCallback: Callback function to execute when result is ready
+			 */
+			void getWalletCoinsAsync(String encPubKey, String b58PubKey, Callback<OpResult<Double>> getWalletCoinsCallback);
 
 			/**
 			 * Returns a JSON Object with a block information
 			 * @param block: Block number (0..blocks count-1)
 			 * @return Returns a JSON Object with a "Block Object" */
 			Block getBlock(Integer block);
-
+			
+			/**
+			 * Returns a JSON Object with a block information
+			 * @param block: Block number (0..blocks count-1)
+			 * @param getBlockCallback: Callback function to execute when result is ready
+			 */
+			void getBlockAsync(Integer block, Callback<OpResult<Block>> getBlockCallback);
+			
 			/**
 			 * Returns a JSON Array with blocks information from "start" to "end" (or "last" n blocks) Blocks are returned in DESCENDING order. 
 			 * @see getBlock
@@ -149,11 +166,28 @@ public interface PascalCoinClient {
 			 * Must use last exclusively, or start and end, or error
 			 * @return JSON Array with blocks information */
 			List<Block> getBlocks(Integer last, Integer start, Integer end );
+			
+			/**
+			 * Returns a JSON Array with blocks information from "start" to "end" (or "last" n blocks) Blocks are returned in DESCENDING order. 
+			 * @see getBlock
+			 * @param last: Last n blocks in the blockchain (n&gt;0 and n&lt;=1000)
+			 * @param start: From this block
+			 * @param end: To this block
+			 * Must use last exclusively, or start and end, or error
+			 * @param getBlocksCallback Callback function to execute when result is ready
+			 */
+			void getBlocksAsync(Integer last, Integer start, Integer end, Callback<OpResult<List<Block>>> getBlocksCallback);
 
 			/**
 			 * Returns an Integer with blockcount of node
 			 * @return Total blocks */
 			Integer getBlockCount();
+			
+			/**
+			 * Returns an Integer with blockcount of node
+			 * @param getBlockCountCallback: Callback function to execute when result is ready
+			 */
+			void getBlockCountAsync(Callback<OpResult<Integer>> getBlockCountCallback);
 
 			/**
 			 * Returns a JSON Object with an operation inside a block
@@ -161,6 +195,14 @@ public interface PascalCoinClient {
 			 * @param opblock: Operation (0..operations-1) of this block
 			 * @return JSON Object with a "Operation Object" */
 			Operation getBlockOperation(Integer block, Integer opblock);
+			
+			/**
+			 * Returns a JSON Object with an operation inside a block
+			 * @param block: Block number
+			 * @param opblock: Operation (0..operations-1) of this block
+			 * @param getBlockOperationCallback: Callback function to execute when result is ready
+			 */
+			void getBlockOperationAsync(Integer block, Integer opblock,Callback<OpResult<Operation>> getBlockOperationCallback);
 
 			/**
 			 * Returns a JSON Array with all operations of specified block Operations are returned in DESCENDING order
@@ -169,6 +211,15 @@ public interface PascalCoinClient {
 			 * @param max: Integer (optional, default = 100). If provided, will return max registers. If not provided, max=100 by default
 			 * @return Returns a JSON Array with "Operation Object" items */
 			List<Operation> getBlockOperations(Integer block,Integer start, Integer max);
+			
+			/**
+			 * Returns a JSON Array with all operations of specified block Operations are returned in DESCENDING order
+			 * @param block: Block number
+			 * @param start: Integer (optional, default = 0). If provided, will start at this position (index starts at position 0)
+			 * @param max: Integer (optional, default = 100). If provided, will return max registers. If not provided, max=100 by default
+			 * @param getBlockOperationsCallback: Callback function to execute when result is ready
+			 */
+			void getBlockOperationsAsync(Integer block,Integer start, Integer max,Callback<OpResult<List<Operation>>> getBlockOperationsCallback);
 
 			/**
 			 * Return a JSON Array with "Operation Object" items. Operations made over an account Operations are returned in DESCENDING order
@@ -188,18 +239,39 @@ public interface PascalCoinClient {
 			 * @param max: Integer (optional, default = 100). If provided, will return max registers. If not provided, max=100 by default
 			 * @return Returns an array holding operations made over account in "Operation Object" format */
 			List<Operation> getAccountOperations(Integer account, Integer startblock, Integer depth, Integer start, Integer max);
-			
+
+			/**
+			 * Return a JSON Array with "Operation Object" items. Operations made over an account Operations are returned in DESCENDING order
+			 * @param account: Account number (0..accounts count-1)
+			 * @param startblock: Integer - (Optional, default value 0) start searching backwards on a specific block where this account has been affected. Allowed to use deep as a param name too.
+			 * @param depth: Integer - (Optional, default value 100) Depth to search on blocks where this account has been affected. Allowed to use deep as a param name too.
+			 * @param start: Integer (optional, default = 0). If provided, will start at this position (index starts at position 0). If start is -1, then will include pending operations, otherwise only operations included on the blockchain
+			 * @param max: Integer (optional, default = 100). If provided, will return max registers. If not provided, max=100 by default
+			 * @param getAccountOperationsCallBack: Callback function to execute when result is ready
+			 */
+			void getAccountOperationsAsync(Integer account, Integer startblock, Integer depth, Integer start, Integer max,Callback<OpResult<List<Operation>>> getAccountOperationsCallBack);
 			
 			/**
 			 * Return a JSON Array with "Operation Object" items with operations pending to be included at the Blockchain.
 			 * @return Returns an array holding pending operations in "Operation Object" format */
 			List<Operation> getPendings();
 			
+			/**
+			 * Return a JSON Array with "Operation Object" items with operations pending to be included at the Blockchain.
+			 * @param getPendingsCallBack: Callback function to execute when result is ready
+			 */
+			void getPendingsAsync(Callback<OpResult<List<Operation>>> getPendingsCallBack);
 			
 			/**
 			 * Return an Integer with item count of operations pending to be included at the Blockchain.
 			 * @return Returns an Integer with number of pending operations*/
 			Integer getPendingsCount();
+			
+			/**
+			 * Return an Integer with item count of operations pending to be included at the Blockchain.
+			 * @param getPendingsCountCallBack: Callback function to execute when result is ready
+			 */
+			void getPendingsCountAsync(Callback<OpResult<Integer>> getPendingsCountCallBack);
 
 			/**
 			 * Return a JSON Object in "Operation Object" format.
@@ -208,12 +280,28 @@ public interface PascalCoinClient {
 			Operation findOperation(String ophash);
 			
 			/**
+			 * Return a JSON Object in "Operation Object" format.
+			 * @param ophash: HEXASTRING - Value ophash received on an operation
+			 * @param findNOperationCallback Function to execute when the result is ready
+			 */
+			void findOperationAsync(String ophash, Callback<OpResult<Operation>> findNOperationCallback);
+			
+			/**
 			 * Search an operation made to an account based on n_operation field 
 			 * Return a JSON Object in "Operation Object" format.
 			 * @param account Account number
 			 * @param nOperation: is an incremental value to protect double spend 
 			 *  @return Returns "Operation Object" format JSON object */
 			Operation findNOperation(Integer account,Integer nOperation);
+			
+			/**
+			 * Search an operation made to an account based on n_operation field 
+			 * Return a JSON Object in "Operation Object" format.
+			 * @param account Account number
+			 * @param nOperation: is an incremental value to protect double spend 
+			 * @param findNOperationsCallback Function to execute when the result is ready
+			 */
+			void findNOperationAsync(Integer account,Integer nOperation, Callback<OpResult<Operation>> findNOperationsCallback);
 			
 			/**
 			 * Return a JSON Array with "Operation Object" Search an operation made to an account based on n_operation .
@@ -225,6 +313,16 @@ public interface PascalCoinClient {
 			 */
 			List<Operation> findNOperations(Integer account, Integer nOperationMin, Integer nOperationMax, Integer startBlock);
 
+			/**
+			 * Return a JSON Array with "Operation Object" Search an operation made to an account based on n_operation .
+			 * @param account Account number
+			 * @param nOperationMin Min n_operation to search
+			 * @param nOperationMax  Max n_operation to search
+			 * @param startBlock  (optional) Block number to start search. 0=Search all, including pending operations
+			 * @param findNOperationsCallback Function to execute when the result is ready
+			 */
+			void findNOperationsAsync(Integer account, Integer nOperationMin, Integer nOperationMax, Integer startBlock, Callback<OpResult<List<Operation>>> findNOperationsCallback);
+			
 			/**
 			* Find accounts by name/type and returns them as an array of Account objects
 			* @param name: If has value, will return the account that match name
@@ -241,8 +339,8 @@ public interface PascalCoinClient {
 			* @param type: If has value, will return accounts with same type
 			* @param start: Starting account number (by default, 0) 
 			* @param max: Max of accounts returned in array (by default, 100) 
-			 * @param findAccountsCallback Function to execute when the result is ready
-			 */
+			* @param findAccountsCallback Function to execute when the result is ready
+			*/
 			void findAccountsAsync(String name, Integer type, Integer start, Integer max, Callback<OpResult<List<Account>>> findAccountsCallback);
 			
 			/**
@@ -293,6 +391,18 @@ public interface PascalCoinClient {
 			Operation sendTo(Integer sender, Integer target, Double amount, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
 
 			/**
+			 * Executes a transaction operation from "sender" to "target" with asynchronous call
+			 * @param sender: Sender account
+			 * @param target: Destination account
+			 * @param amount: Coins to be transferred
+			 * @param fee: Fee of the operation
+			 * @param payload: Payload "item" that will be included in this operation
+			 * @param payloadMethod: Payload "item" that will be included in this operation
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
+			 * @param sendToCallback: Function to execute when result is ready. If transaction is successfull will return a JSON Object in "Operation Object" format. Otherwise, will return a JSON-RPC error code with description */
+			void sendToAsync(Integer sender, Integer target, Double amount, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>> sendToCallback);
+			
+			/**
 			 * Executes a change key operation, changing "account" public key for a new one.
 			 * Note that new one public key can be another Wallet public key, or none.When none, it's like a transaction, tranferring account owner to an external owner
 			 * @param account: Account number to change key
@@ -308,6 +418,21 @@ public interface PascalCoinClient {
 			Operation changeKey(Integer account, Integer accountSigner, String newEncPubKey, String newB58PubKey, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
 
 			/**
+			 * Executes a change key operation, changing "account" public key for a new one. Asynchronous version
+			 * Note that new one public key can be another Wallet public key, or none.When none, it's like a transaction, tranferring account owner to an external owner
+			 * @param account: Account number to change key
+			 * @param accountSigner: Account that signs and pays the fee (must have same public key that delisted account, or be the same)
+			 * @param newEncPubKey: HEXASTRING - New public key in encoded format
+			 * @param newB58PubKey: New public key in Base 58 format (the same that Application Wallet exports)
+			 * @param fee: PASCURRENCY - Fee of the operation
+			 * @param payload: Payload "item" that will be included in this operation
+			 * @param payloadMethod: Encode type of the item payload
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
+			 * Only one or none of new_b58_pubkey, new_enc_pubkey should be used. Populating both will result in an error.
+			 * @param changeKeyCallback: If operation is successfull will return a JSON Object in "Operation Object" format. */
+			void changeKeyAsync(Integer account, Integer accountSigner, String newEncPubKey, String newB58PubKey, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>>  changeKeyCallback);
+			
+			/**
 			 * Executes a change key operation, changing "account" public key for a new one, in multiple accounts.
 			 * Works like changekey
 			 * @param accounts: List of accounts separated by a comma
@@ -320,6 +445,19 @@ public interface PascalCoinClient {
 			 * @return If operation is successfull will return a JSON Array with Operation object items for each key If operation cannot be made, a JSON-RPC error message is returned */
 			List<Operation> changeKeys(String accounts, String newEncPubKey, String newB58PubKey, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
 
+			/**
+			 * Executes a change key operation, changing "account" public key for a new one, in multiple accounts. Asynchronous version
+			 * Works like changekey
+			 * @param accounts: List of accounts separated by a comma
+			 * @param newEncPubKey: HEXASTRING - New public key in encoded format
+			 * @param newB58PubKey: New public key in Base 58 format (the same that Application Wallet exports)
+			 * @param fee: PASCURRENCY - Fee of the operation
+			 * @param payload: Payload "item" that will be included in this operation
+			 * @param payloadMethod: Encode type of the item payload
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
+			 * @param changeKeysCallback: Function to execute when result is ready. If operation is successfull will return a JSON Array with Operation object items for each key If operation cannot be made, a JSON-RPC error message is returned */
+			void changeKeysAsync(String accounts, String newEncPubKey, String newB58PubKey, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<List<Operation>>>  changeKeysCallback);
+			
 			/**
 			 * Lists an account for sale (public or private)
 			 * Only one or none of new_b58_pubkey, new_enc_pubkey should be used. Populating both will result in an error.
@@ -339,6 +477,24 @@ public interface PascalCoinClient {
 			Operation listAccountForSale(Integer accountTarget, Integer accountSigner, Double price, Integer sellerAccount, String newB58PubKey, String newEncPubKey, Integer lockedUntilBlock, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
 
 			/**
+			 * Lists an account for sale (public or private). Asynchronous version
+			 * Only one or none of new_b58_pubkey, new_enc_pubkey should be used. Populating both will result in an error.
+			 * @param accountTarget: Account to be listed
+			 * @param accountSigner: Account that signs and pays the fee (must have same public key that listed account, or be the same)
+			 * @param price: price account can be purchased for
+			 * @param sellerAccount: Account that will receive "price" amount on sell
+			 * @param newB58PubKey: Base58 encoded public key (for private sale only)
+			 * @param newEncPubKey: Hex-encoded public key (for private sale only)
+			 * @param lockedUntilBlock: Block number until this account will be locked (a locked account cannot execute operations while locked)
+			 * @param fee: PASCURRENCY - Fee of the operation
+			 * @param payload: Payload "item" that will be included in this operation
+			 * @param payloadMethod: Encode type of the item payload
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
+			 * @param listAccountForSaleCallback: Function to execute when result is ready. If operation is successful will return a JSON Object in "Operation Object" format. 
+			 * */
+			void listAccountForSaleAsync(Integer accountTarget, Integer accountSigner, Double price, Integer sellerAccount, String newB58PubKey, String newEncPubKey, Integer lockedUntilBlock, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>>  listAccountForSaleCallback);
+			
+			/**
 			 * Delist an account from sale.
 			 * @param accountTarget: Account to be delisted
 			 * @param accountSigner: Account that signs and pays the fee (must have same public key that delisted account, or be the same)
@@ -348,6 +504,17 @@ public interface PascalCoinClient {
 			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
 			 * @return If operation is successfull will return a JSON Object in "Operation Object" format. */
 			Operation delistAccountForSale(Integer accountTarget, Integer accountSigner, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
+			
+			/**
+			 * Delist an account from sale. Asynchronous version.
+			 * @param accountTarget: Account to be delisted
+			 * @param accountSigner: Account that signs and pays the fee (must have same public key that delisted account, or be the same)
+			 * @param fee: PASCURRENCY - Fee of the operation
+			 * @param payload: Payload "item" that will be included in this operation
+			 * @param payloadMethod: Encode type of the item payload
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
+			 * @param delistAccountForSaleCallback: Function to execute on result ready. If operation is successfull will return a JSON Object in "Operation Object" format. */
+			void delistAccountForSaleAsync(Integer accountTarget, Integer accountSigner, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>> delistAccountForSaleCallback);
 
 			/**
 			 * Buy an account currently listed for sale (public or private)
@@ -366,6 +533,22 @@ public interface PascalCoinClient {
 			Operation buyAccount(Integer buyerAccount, Integer accountToPurchase, Double price, Integer sellerAccount, String newB58PubKey, String newEncPubKey, Double amount, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
 
 			/**
+			 * Buy an account currently listed for sale (public or private). Asynchronous version
+			 * @param buyerAccount: Account number of buyer who is purchasing the account
+			 * @param accountToPurchase: Account number being purchased
+			 * @param price: Settlement price of account being purchased
+			 * @param sellerAccount: Account of seller, receiving payment
+			 * @param newB58PubKey: Post-settlement public key in base58 encoded format.
+			 * @param newEncPubKey: Post-settlement public key in hexaDouble encoded format.
+			 * @param amount: Amount being transferred from buyer_account to seller_account (the settlement). This is a PASCURRENCY value.
+			 * @param fee: Fee of the operation. This is a PASCURRENCY value.
+			 * @param payload: Payload "item" that will be included in this operation
+			 * @param payloadMethod: Encode type of the item payload
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
+			 * @param buyAccountCallback: Function to execute when result is ready.If operation is successfull will return a JSON Object in "Operation Object" format. */
+			void buyAccountAsync(Integer buyerAccount, Integer accountToPurchase, Double price, Integer sellerAccount, String newB58PubKey, String newEncPubKey, Double amount, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>> buyAccountCallback);
+			
+			/**
 			 * Changes an account Public key, or name, or type value (at least 1 on 3)
 			 * @param accountTarget: Account being changed
 			 * @param accountSigner: Account paying the fee (must have same public key as account_target)
@@ -380,6 +563,23 @@ public interface PascalCoinClient {
 			 * Only one or none of new_b58_pubkey, new_enc_pubkey should be used. Populating both will result in an error.
 			 * @return If operation is successfull will return a JSON Object in "Operation Object" format. */
 			Operation changeAccountInfo(Integer accountTarget, Integer accountSigner, String newEncPubKey, String newB58PubKey, String newName, Short newType, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd);
+
+			/**
+			 * Changes an account Public key, or name, or type value (at least 1 on 3). Asynchronous version
+			 * @param accountTarget: Account being changed
+			 * @param accountSigner: Account paying the fee (must have same public key as account_target)
+			 * @param newEncPubKey: New account public key encoded in hexaDouble format
+			 * @param newB58PubKey: New account public key encoded in base58 format
+			 * @param newName: New account name encoded in PascalCoin64 format (null means keep current name)
+			 * @param newType: New account type (null means keep current type)
+			 * @param fee: PASCURRENCY - Fee of the operation
+			 * @param payload: Payload "item" that will be included in this operation
+			 * @param payloadMethod: Encode type of the item payload
+			 * @param pwd: Used to encrypt payload with aes as a payload_method. If none equals to empty password
+			 * Only one or none of new_b58_pubkey, new_enc_pubkey should be used. Populating both will result in an error.
+			 * @param changeAccountInfoCallback: Function to execute when result is ready. If operation is successfull will return a JSON Object in "Operation Object" format. */
+			void changeAccountInfoAsync(Integer accountTarget, Integer accountSigner, String newEncPubKey, String newB58PubKey, String newName, Short newType, Double fee, byte[] payload, PayLoadEncryptionMethod payloadMethod, String pwd, Callback<OpResult<Operation>> changeAccountInfoCallback);
+
 			
 			/**
 			 * Creates and signs a "Send to" operation without checking information and without transfering to the network. It's useful for "cold wallets" that are off-line (not synchronized with the network) and only holds private keys
@@ -510,6 +710,14 @@ public interface PascalCoinClient {
 			 * @param rawOperations: HEXASTRING (obtained calling signchangekey or signsendto) 
 			 * @return Returns a JSON Array with Operation Object items, one for each operation in rawoperations param. NOTE: Remember that rawoperations are operations that maybe are not correct */
 			List<Operation> operationsInfo(String rawOperations);
+			
+			/**
+			 * Returns information stored in a rawoperations param (obtained calling signchangekey or signsendto)
+			 *
+			 * @param rawOperations: HEXASTRING (obtained calling signchangekey or signsendto) 
+			 * @param operationsInfoCallback: Function to execute when result is ready
+			 */
+			void operationsInfoAsync(String rawOperations, Callback<OpResult<List<Operation>>> operationsInfoCallback);
 
 			/**
 			 * Executes operations included in rawopertions param and transfers to the network. Raw operations can include "Send to" oprations or "Change key" operations.
@@ -518,6 +726,15 @@ public interface PascalCoinClient {
 			 * For each Operation Object item, if there is an error, param valid will be false and param errors will show error description.Otherwise, operation is correct and will contain ophash param
 			 * @return Returns a JSON Array with Operation Object items, one for each operation in rawoperations param. */
 			List<Operation> executeOperations(String rawOperations);
+			
+			/**
+			 * Executes operations included in rawopertions param and transfers to the network. Raw operations can include "Send to" oprations or "Change key" operations.
+			 * 
+			 * @param rawOperations: Executes operations included in rawopertions param and transfers to the network. Raw operations can include "Send to" oprations or "Change key" operations. 
+			 * For each Operation Object item, if there is an error, param valid will be false and param errors will show error description.Otherwise, operation is correct and will contain ophash param
+			 * @param executeOperationsCallback: Function to execute when result is ready
+			 */
+			void executeOperationsAsync(String rawOperations, Callback<OpResult<List<Operation>>> executeOperationsCallback);
 
 			/**
 			 * Returns information of the Node in a JSON Object
@@ -549,6 +766,17 @@ public interface PascalCoinClient {
 			 * @param b58PubKey: Public key in b58 format to use if payloadMethod='pubkey'
 			 * @return Returns a HEXASTRING with encrypted payload */
 			String payloadEncrypt(String payload, String payloadMethod, String pwd, String encPubKey, String b58PubKey);
+			
+			/**
+			 * Encrypt a text "payload" using "payload_method". Asynchronous version
+			 * @param payload: HEXASTRING - Text to encrypt in hexadecimal format 
+			 * @param payloadMethod: Payload method. Possible values are 'aes' 'pubkey' or 'none'
+			 * @param pwd: Using a Password. Must provide pwd param 
+			 * @param encPubKey: Public key in encoded format to use if payloadMethod='pubkey'
+			 * @param b58PubKey: Public key in b58 format to use if payloadMethod='pubkey'
+			 * @param payloadEncryptCallback: function to xecute when result is ready
+			 */
+			void payloadEncryptAsync(String payload, String payloadMethod, String pwd, String encPubKey, String b58PubKey, Callback<OpResult<String>> payloadEncryptCallback);
 
 			/**
 			 * Returns a HEXASTRING with decrypted text (a payload) using private keys in the wallet or a list of Passwords (used in "aes" encryption)
@@ -559,6 +787,17 @@ public interface PascalCoinClient {
 			 * If using one of passwords to decrypt payload then returns value "pwd" in payload_method and pwd contains password used
 			 * @return Decryped payload */
 			DecryptedPayload payloadDecrypt(String payload, String[] pwds);
+			
+			/**
+			 * Returns a HEXASTRING with decrypted text (a payload) using private keys in the wallet or a list of Passwords (used in "aes" encryption). Asynchronous version
+			 *
+			 * @param payload: HEXASTRING - Encrypted data 
+			 * @param pwds: List of passwords to use 
+			 * @param payloadDecryptCallback: Function to execute when result is ready
+			 * If using one of private keys is able to decrypt payload then returns value "key" in payload_method and enc_pubkey contains encoded public key in HEXASTRING
+			 * If using one of passwords to decrypt payload then returns value "pwd" in payload_method and pwd contains password used
+			 */
+			void payloadDecryptAsync(String payload, String[] pwds, Callback<OpResult<DecryptedPayload>> payloadDecryptCallback);
 
 			/**
 			 * Returns all the current connections

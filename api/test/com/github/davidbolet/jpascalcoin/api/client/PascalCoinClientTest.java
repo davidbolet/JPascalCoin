@@ -184,6 +184,11 @@ public class PascalCoinClientTest {
 		{
 			System.out.println(String.format("Finding Account %d balance greater than : %.4f. Account balance %.4f State is %s", account.getAccount(),10000.0,account.getBalance(), account.getState()));
 		}
+		result = client.findAccounts(null, null,null, null,null,b58PubKey,null,null,  0, 10);
+		for(Account account:result)
+		{
+			System.out.println(String.format("Finding Account %d balance greater than : %.4f. Account balance %.4f State is %s", account.getAccount(),10000.0,account.getBalance(), account.getState()));
+		}
 	}
 	
 	/**

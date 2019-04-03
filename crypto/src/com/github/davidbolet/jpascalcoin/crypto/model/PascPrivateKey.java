@@ -128,11 +128,11 @@ public class PascPrivateKey {
 	public static PascPrivateKey fromPrivateKey(String privateKey, KeyType type) {
         PascPrivateKey result=null;
         
-        if (!KeyType.SECP256K1.equals(type))
-        	throw new IllegalArgumentException("Only SECP256K1 keys are supported by the moment");
+//        if (!KeyType.SECP256K1.equals(type))
+//        	throw new IllegalArgumentException("Only SECP256K1 keys are supported by the moment");
         try {
         	BigInteger s=new BigInteger(privateKey, 16);
-        	ECParameterSpec ecParameters= CryptoUtils.getECParameterSpec("secp256k1");
+        	ECParameterSpec ecParameters= CryptoUtils.getECParameterSpec(type.name());
         	ECPrivateKeySpec keySpec = new ECPrivateKeySpec(s,ecParameters);
         	KeyFactory factory = KeyFactory.getInstance("EC");
             PrivateKey privateKey1=factory.generatePrivate(keySpec);
@@ -151,13 +151,13 @@ public class PascPrivateKey {
 	 * @throws UnsupportedKeyTypeException if given type is other than SECP256K1
 	 */
 	public static PascPrivateKey generate(KeyType type) throws UnsupportedKeyTypeException {
-		if (!type.equals(KeyType.SECP256K1)) {
-			throw new UnsupportedKeyTypeException();
-		}
+//		if (!type.equals(KeyType.SECP256K1)) {
+//			throw new UnsupportedKeyTypeException();
+//		}
 		try {
 			//Generate an ECDSA Key Pair
 			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
-			ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256k1");
+			ECGenParameterSpec ecSpec = new ECGenParameterSpec(type.name());
 			keyGen.initialize(ecSpec);
 			KeyPair kp = keyGen.generateKeyPair();
 			PublicKey pub = kp.getPublic();
@@ -183,7 +183,7 @@ public class PascPrivateKey {
     public static PascPublicKey fromPrivateKey(PascPrivateKey privateKey) {
     	com.github.davidbolet.jpascalcoin.common.model.PascPublicKey result=null;
     	BigInteger s=new BigInteger(privateKey.getPrivateKey(), 16);
-    	java.security.spec.ECParameterSpec ecParameters= CryptoUtils.getECParameterSpec("secp256k1");
+    	java.security.spec.ECParameterSpec ecParameters= CryptoUtils.getECParameterSpec(privateKey.getKeyType().name());
     	
     	ECPoint generator=ecParameters.getGenerator();
     	ECPoint w=ECPointUtils.scalmult(generator, s);
@@ -191,7 +191,7 @@ public class PascPrivateKey {
 			String sx = adjustTo64(w.getAffineX().toString(16)).toUpperCase();
 			String sy = adjustTo64(w.getAffineY().toString(16)).toUpperCase();
 			//We must divide by 2 as charset is Unicode, while Pasc uses AnsiString 
-			String bcPub = HexConversionsHelper.int2BigEndianHex(KeyType.SECP256K1.getValue())+HexConversionsHelper.int2BigEndianHex(sx.length()/2) + sx + HexConversionsHelper.int2BigEndianHex(sy.length()/2)+sy;
+			String bcPub = HexConversionsHelper.int2BigEndianHex(privateKey.getKeyType().getValue())+HexConversionsHelper.int2BigEndianHex(sx.length()/2) + sx + HexConversionsHelper.int2BigEndianHex(sy.length()/2)+sy;
 			result=com.github.davidbolet.jpascalcoin.common.model.PascPublicKey.fromEncodedPubKey( bcPub);
     	} catch (Exception ex) {
     		ex.printStackTrace();

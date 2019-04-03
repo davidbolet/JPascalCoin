@@ -1,7 +1,13 @@
 package com.github.davidbolet.jpascalcoin.crypto.helper;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.spec.ECPoint;
+
+import org.spongycastle.jce.ECNamedCurveTable;
+import org.spongycastle.jce.spec.ECParameterSpec;
+
+import com.github.davidbolet.jpascalcoin.common.model.KeyType;
 
 public class ECPointUtils {
 
@@ -64,5 +70,46 @@ public static ECPoint doublePoint(ECPoint r) {
     ECPoint out = new ECPoint(Xout, Yout);
     return out;
 }
+
+public static  byte[] compressedToUncompressed(KeyType keyType, byte[] compKey) {
+	ECParameterSpec SPEC = ECNamedCurveTable.getParameterSpec(keyType.name());
+	
+    org.spongycastle.math.ec.ECPoint point = SPEC.getCurve().decodePoint(compKey);
+    byte[] x = point.getXCoord().getEncoded();
+    byte[] y = point.getYCoord().getEncoded();
+    // concat 0x04, x, and y, make sure x and y has 32-bytes:
+    ByteBuffer bb = ByteBuffer.allocate(x.length + y.length);
+    //bb.put(new byte[] {0x04});
+    bb.put(x);
+    bb.put(y);
+    return bb.array();
+}
+
+public static ECPoint convertPointFromBC(org.spongycastle.math.ec.ECPoint point) {
+	return new ECPoint(point.getAffineXCoord().toBigInteger(),point.getAffineYCoord().toBigInteger()) ;
+}
+
+public static org.spongycastle.math.ec.ECPoint convertPointToBC(KeyType keyType, ECPoint point) {
+	ECParameterSpec SPEC = ECNamedCurveTable.getParameterSpec(keyType.name());
+    return SPEC.getCurve().createPoint(point.getAffineX() , point.getAffineY());
+}
+
+public static org.spongycastle.math.ec.ECPoint fromCompressed(KeyType keyType, byte[] compKey) {
+	ECParameterSpec SPEC = ECNamedCurveTable.getParameterSpec(keyType.name());
+	
+    return  SPEC.getCurve().decodePoint(compKey);
+   
+    //return new ECPoint(point.getAffineXCoord().toBigInteger(),point.getAffineYCoord().toBigInteger()) ;
+}
+
+public static  byte[] compressPK(KeyType keyType, BigInteger x, BigInteger y) {
+	ECParameterSpec SPEC = ECNamedCurveTable.getParameterSpec(keyType.name());
+	
+    org.spongycastle.math.ec.ECPoint point = SPEC.getCurve().createPoint(x, y);
+    return point.getEncoded(true);
+}
+
+
+
 
 }

@@ -96,7 +96,7 @@ public abstract class PascOperation {
 					return OpenSslAes.encrypt(password, payload);
 			case DEST:
 			case SENDER:
-				return EncryptionUtils.encryptWithPublicKey(publicKeyToEncript, payload);				
+				return EncryptionUtils.doPascalcoinEciesEncrypt(publicKeyToEncript, payload);				
 			default:
 				return new byte[0];
 			}
