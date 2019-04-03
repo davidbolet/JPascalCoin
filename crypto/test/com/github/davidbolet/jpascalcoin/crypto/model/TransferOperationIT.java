@@ -110,9 +110,9 @@ public class TransferOperationIT {
 		
 		String privateKey=OpenSslAes.decrypt(pwd, privateKeyEnc);
 		//PascPrivateKey key = PascPrivateKey.fromPrivateKey(privateKey.substring(8), KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(privateKey.substring(0,4))));
-		final PascPrivateKey key = PascPrivateKey.fromPrivateKey("AEBDCF34059169E9C7B4A56B086C78F78833E456FAF124C8783937FFF5C85C2E", KeyType.SECP256K1);//AEBDCF34059169E9C7B4A56B086C78F78833E456FAF124C8783937FFF5C85C2E
+		final PascPrivateKey key = PascPrivateKey.fromPrivateKey("<private key>", KeyType.SECP256K1);
 		final PascPublicKey publicKey=client.decodePubKey(key.getPublicKey().getEncPubKey(), null);
-		assertEquals(key.getPublicKey().getEncPubKey(),"CA022000D6B63C9217879B32D6E1919FD7DD37A175AE491D6C6D0CB32563574F516EAF562000ED7600B193627F78D6ADAEDBB0079D7D56B2EEAF206FE4C7BFC5972F33BEE022");
+		assertEquals(key.getPublicKey().getEncPubKey(),"<public key>");
 		List<Account> result=client.findAccounts(null, null, null, null, null, key.getPublicKey().getBase58PubKey(), null, null, null, null);
 		assertTrue(result.size()==1);
 		assertEquals(key.getPublicKey().getBase58PubKey(),publicKey.getBase58PubKey());
