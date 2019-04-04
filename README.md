@@ -5,6 +5,7 @@ It's intended to be used both on Android or Java (java 1.7 is requiered).
 Uses both google gson library for json deserialization and retrofit for rest calls. 
 For logging uses java.util.logging, as it works by default on both Android and pure Java.
 Junit tests are included.
+
 Last version (4.0.2)
  * Version 4 is a major revision. Not only includes all rpc changes introduced by protocol v4, but also all basic cryptographic functions have been added, including key generation, offline signing/verifying, encryption/decryption and operation generation.
 
