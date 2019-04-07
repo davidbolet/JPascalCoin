@@ -1880,6 +1880,16 @@ public class PascalCoinClientImpl implements PascalCoinClient {
 		}
 		return result;
 	}
+	
+	@Override
+	public void getNodeStatusAsync(Callback<OpResult<NodeStatus>> nodeStatusCallback) {
+		Map<String,Object> body = getRPCBody();
+		Map<String,Object> params = new HashMap<>();
+		body.put("method","nodestatus");
+		body.put("params",params);
+		Call<OpResult<NodeStatus>> nodeStatusCall= pascalCoinService.getNodeStatus(body);
+		nodeStatusCall.enqueue(nodeStatusCallback);
+	}
 
 	@Override
 	public String encodePubKey(KeyType ecNid, String x, String y) {

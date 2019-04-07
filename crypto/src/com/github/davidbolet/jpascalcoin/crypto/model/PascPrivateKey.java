@@ -7,21 +7,27 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
+
+import org.spongycastle.jce.ECNamedCurveTable;
+import org.spongycastle.jce.spec.ECPublicKeySpec;
 
 import com.github.davidbolet.jpascalcoin.common.exception.UnsupportedKeyTypeException;
 import com.github.davidbolet.jpascalcoin.common.helper.CryptoUtils;
 import com.github.davidbolet.jpascalcoin.common.helper.HexConversionsHelper;
 import com.github.davidbolet.jpascalcoin.common.model.KeyType;
 import com.github.davidbolet.jpascalcoin.common.model.PascPublicKey;
-import com.github.davidbolet.jpascalcoin.crypto.helper.ECPointUtils;;
+import com.github.davidbolet.jpascalcoin.crypto.helper.ECPointUtils;
+import com.github.davidbolet.jpascalcoin.crypto.helper.EncryptionUtils;;
 
 
 /**
@@ -122,14 +128,11 @@ public class PascPrivateKey {
     /**
      * Generates a new PascPrivateKey object from an string representation of a private key
      * @param privateKey The private Key in string format
-     * @param type KeyType Actually only SECP256K1
+     * @param type KeyType 
      * @return PascPrivateKey
      */
 	public static PascPrivateKey fromPrivateKey(String privateKey, KeyType type) {
         PascPrivateKey result=null;
-        
-//        if (!KeyType.SECP256K1.equals(type))
-//        	throw new IllegalArgumentException("Only SECP256K1 keys are supported by the moment");
         try {
         	BigInteger s=new BigInteger(privateKey, 16);
         	ECParameterSpec ecParameters= CryptoUtils.getECParameterSpec(type.name());
@@ -148,15 +151,24 @@ public class PascPrivateKey {
 	 * Generates a new PascPrivateKey object
 	 * @param type KeyType (by the moment, only SECP256K1 keys are supported)
 	 * @return PascPrivateKey
-	 * @throws UnsupportedKeyTypeException if given type is other than SECP256K1
 	 */
 	public static PascPrivateKey generate(KeyType type) throws UnsupportedKeyTypeException {
-//		if (!type.equals(KeyType.SECP256K1)) {
-//			throw new UnsupportedKeyTypeException();
-//		}
 		try {
 			//Generate an ECDSA Key Pair
-			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
+//			ECNamedCurveParameterSpec curveParameterSpec = ECNamedCurveTable.getParameterSpec(privateKey.getKeyType().name());
+//			ECCurve ecCurve = curveParameterSpec.getCurve();
+//			
+//	        ECDomainParameters ecDomainParameters = new ECDomainParameters(
+//	        		ecCurve,
+//	        		curveParameterSpec.getG(),
+//	        		curveParameterSpec.getN(),
+//	        		curveParameterSpec.getH());
+//	        ECPrivateKeyParameters ecdhPrivateKeyParams = (ECPrivateKeyParameters) ECUtil. .generatePrivateKeyParameter(privateKey.getECPrivateKey());
+//		    
+//			
+			
+			
+			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC","SC");
 			ECGenParameterSpec ecSpec = new ECGenParameterSpec(type.name());
 			keyGen.initialize(ecSpec);
 			KeyPair kp = keyGen.generateKeyPair();
@@ -164,23 +176,30 @@ public class PascPrivateKey {
 			PrivateKey pvt = kp.getPrivate();
 			
 			//The ECDSA Private Key
-			String sepvt = adjustTo64(((ECPrivateKey)pvt).getS().toString(16)).toUpperCase();
+			String keyString=((ECPrivateKey)pvt).getS().toString(16);
+			String sepvt = (type.equals(KeyType.SECP256K1)?adjustTo64(keyString):keyString).toUpperCase();
 			PascPrivateKey result = new PascPrivateKey((ECPrivateKey)pvt, sepvt, type);
-			assert (result.getPublicKey().getECPublicKey().equals(pub));
+			ECPublicKey res= (ECPublicKey) pub;
+			assert res.getW().getAffineX().equals(result.getPublicKey().getECPublicKey().getW().getAffineX());
+			assert res.getW().getAffineY().equals(result.getPublicKey().getECPublicKey().getW().getAffineY());
+			//assert (result.getPublicKey().getECPublicKey().equals(res));
 			return result;
 		}
 		catch(NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
+			e.printStackTrace();
+			return null;
+		} catch (NoSuchProviderException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 	
 	  /**
-     * Derivates Public Key from given privateKey 
+     * Derivates Public Key from given privateKey, only works for SECP256K1 but does not depend on BouncyCastle
      * @param privateKey PascPrivateKey to derivate
      * @return PublicKey
      */
-    public static PascPublicKey fromPrivateKey(PascPrivateKey privateKey) {
+    public static PascPublicKey fromPrivateKeySECP256K1(PascPrivateKey privateKey) {
     	com.github.davidbolet.jpascalcoin.common.model.PascPublicKey result=null;
     	BigInteger s=new BigInteger(privateKey.getPrivateKey(), 16);
     	java.security.spec.ECParameterSpec ecParameters= CryptoUtils.getECParameterSpec(privateKey.getKeyType().name());
@@ -198,6 +217,35 @@ public class PascPrivateKey {
     	}
     	return result;
     }
+    
+	 /**
+     * Derivates Public Key from given privateKey using BouncyCastle libraries
+     * @param privateKey PascPrivateKey to derivate
+     * @return PublicKey
+     */
+    public static PascPublicKey fromPrivateKey(PascPrivateKey privateKey) {
+    	PublicKey publicKey=fromPrivateKey(privateKey.getECPrivateKey().getS(), privateKey.getKeyType());
+    	return EncryptionUtils.fromECPublicKey((ECPublicKey) publicKey);
+    }
+    
+	public static PublicKey fromPrivateKey(BigInteger privateKeyD, KeyType keyType) {
+	try {
+		
+    	KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "SC");
+    	org.spongycastle.jce.spec.ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec(keyType.name());
+    	org.spongycastle.math.ec.ECPoint Q = ecSpec.getG().multiply(privateKeyD);
+    	byte[] publicDerBytes = Q.getEncoded(false);
+
+    	org.spongycastle.math.ec.ECPoint point = ecSpec.getCurve().decodePoint(publicDerBytes);
+    	ECPublicKeySpec pubSpec = new ECPublicKeySpec(point, ecSpec);
+    	return keyFactory.generatePublic(pubSpec);
+       
+    } catch (Exception ex) {
+
+        return null;
+    }
+}
+    
 	
 	static private String adjustTo64(String s) {
         switch(s.length()) {

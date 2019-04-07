@@ -5,11 +5,11 @@ jPascalcoin.client.port=4003
 jPascalcoin.client.logLevel=1
 
 #Your daemon server storage Password (be careful!)
-jPascalcoin.wallet.password=<your wallet password>
+jPascalcoin.wallet.password=L1L0kio10
 
 #Keys for tests (must be contained on daemon)
 jPascalcoin.client.publicKey.encoded=<Public key in encoded format>
-jPascalcoin.client.publicKey.b58=<Public key in B58 format>
+jPascalcoin.client.publicKey.b58=3GhhbovBWTZfEoHXYMFtGkrmADW3KEgVq7uU4cKeLpqJaDBWPTxEooGb5CooBw1jKwtAzWkGafb4z7Cmuk5kCiTB49rgsHnqdUTsic
 
 #Some accounts for tests (substitute with yours. Checksum is not needed)
 jPascalcoin.test.accountId = 5454

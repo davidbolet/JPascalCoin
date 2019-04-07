@@ -740,6 +740,12 @@ public interface PascalCoinClient {
 			 * Returns information of the Node in a JSON Object
 			 *  @return JSON Object with information */
 			NodeStatus getNodeStatus();
+			
+			/**
+			 * Returns information of the Node in a JSON Object in async mode
+			 * @param nodeStatusCallback function to execute to get the JSON Object with information */
+			void getNodeStatusAsync(Callback<OpResult<NodeStatus>> nodeStatusCallback);
+			
 
 			/**
 			 * Encodes a public key based on params information

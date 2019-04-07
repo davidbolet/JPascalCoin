@@ -1,6 +1,10 @@
 package com.github.davidbolet.jpascalcoin.crypto.helper;
 
 import java.security.SecureRandom;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+
 import org.spongycastle.crypto.BasicAgreement;
 import org.spongycastle.crypto.BufferedBlockCipher;
 import org.spongycastle.crypto.CipherParameters;
@@ -31,6 +35,7 @@ import org.spongycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.spongycastle.math.ec.ECCurve;
 
 import com.github.davidbolet.jpascalcoin.common.helper.HexConversionsHelper;
+import com.github.davidbolet.jpascalcoin.common.model.KeyType;
 import com.github.davidbolet.jpascalcoin.common.model.PascPublicKey;
 import com.github.davidbolet.jpascalcoin.crypto.model.EciesPublicKeyEncoder;
 import com.github.davidbolet.jpascalcoin.crypto.model.PascPrivateKey;
@@ -137,4 +142,67 @@ public class EncryptionUtils {
 		return iesCipher.processBlock(payload, 0, payload.length);
 	}
 	
+	public static KeyType getKeyTypeFromECParameter(ECParameterSpec ecParameterSpec) {
+		
+		for (KeyType type :KeyType.values()){
+		  final String name = type.name();
+
+		        ECNamedCurveParameterSpec params = ECNamedCurveTable.getParameterSpec(name);
+
+		        if (params.getN().equals(ecParameterSpec.getOrder())
+		            && params.getH().intValue()==ecParameterSpec.getCofactor()
+		            && params.getCurve().getA().toBigInteger().equals(ecParameterSpec.getCurve().getA())
+		            && params.getCurve().getB().toBigInteger().equals(ecParameterSpec.getCurve().getB())
+		            && params.getG().normalize().getYCoord().toBigInteger().equals(ecParameterSpec.getGenerator().getAffineY())
+		            && params.getG().normalize().getXCoord().toBigInteger().equals(ecParameterSpec.getGenerator().getAffineX())){
+		            return KeyType.valueOf(name.toUpperCase());
+		        }
+		    }
+
+		 return null;
+	}
+	
+	 /**
+     * Generates a PascPublicKey object from a given java.security.ECPublicKey object
+     * @param epub java.security.PublicKey to generate Pascalcoin public Key
+     * @return Pascalcoin public key object
+     */
+    public static com.github.davidbolet.jpascalcoin.common.model.PascPublicKey fromECPublicKey(ECPublicKey epub) {
+ 
+    	KeyType type=getKeyTypeFromECParameter(epub.getParams());
+    	//ECPublicKey epub = (ECPublicKey)pub;
+		ECPoint pt = epub.getW();
+//		String sx1 = HexConversionsHelper.byteToHex(pt.getAffineX().toByteArray()).toUpperCase(); 
+//		String sy1 = HexConversionsHelper.byteToHex(pt.getAffineY().toByteArray()).toUpperCase();
+		String sx = adjustSize(pt.getAffineX().toString(16)).toUpperCase();
+		String sy = adjustSize(pt.getAffineY().toString(16)).toUpperCase();
+		
+		System.out.println("sx.length:"+sx.length());
+		System.out.println("sy.length:"+sy.length());
+		//We must divide by 2 as charset is Unicode, while Pasc uses AnsiString 
+		String bcPub = HexConversionsHelper.int2BigEndianHex(type.getValue())+HexConversionsHelper.int2BigEndianHex(sx.length()/2) + sx + HexConversionsHelper.int2BigEndianHex(sy.length()/2)+sy;
+		com.github.davidbolet.jpascalcoin.common.model.PascPublicKey pk=PascPublicKey.fromEncodedPubKey( bcPub);
+        return pk;
+    }
+	
+	static private String adjustSize(String s) {
+        switch(s.length()) {
+        case 62: return "00" + s;
+        case 63: return "0" + s;
+        case 64: return s;
+        case 68: return "0000"+s;
+        case 69: return "000"+s;
+        case 70: return "00"+s;
+        case 71: return "0"+s;
+        case 128:return "0000"+s;
+        case 129:return "000"+s;
+        case 130:return "00"+s;
+        case 131:return "0"+s;
+        default:
+        	return s;
+            //throw new IllegalArgumentException("not a valid key: " + s);
+            //72b2ea7c171852241c245ab996344ff1f47a545cf3684c475b3db38b6750597acf3aeec
+
+        }
+    }
 }

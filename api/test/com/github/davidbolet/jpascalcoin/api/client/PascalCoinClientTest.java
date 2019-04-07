@@ -740,7 +740,7 @@ public class PascalCoinClientTest {
 	}
 	
 	@Test
-	@Ignore
+	//@Ignore
 	public void testPublicKey() {
 		
 		PascPublicKey pub=client.decodePubKey(encPubKey, null);

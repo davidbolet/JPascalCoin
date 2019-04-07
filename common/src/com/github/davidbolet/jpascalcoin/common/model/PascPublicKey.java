@@ -8,9 +8,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
+
+import org.spongycastle.jce.ECNamedCurveTable;
+import org.spongycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.spongycastle.jce.spec.ECNamedCurveSpec;
 
 import com.github.davidbolet.jpascalcoin.common.helper.Base58;
 import com.github.davidbolet.jpascalcoin.common.helper.CryptoUtils;
@@ -198,9 +203,25 @@ public class PascPublicKey implements Serializable {
 		return true;
 	}
 
+	
+	public ECPublicKey getECPublicKeyNew() {
+		try {
+	    KeyFactory eckf = KeyFactory.getInstance("EC","SC");
+	    ECPoint point = new ECPoint(new BigInteger(x,16), new BigInteger(y,16));
+
+        ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(this.getKeyType().name());
+        ECParameterSpec spec = new ECNamedCurveSpec(this.getKeyType().name(), parameterSpec.getCurve(), parameterSpec.getG(), parameterSpec.getN(), parameterSpec.getH(), parameterSpec.getSeed());
+        ECPublicKey ecPublicKey = (ECPublicKey) eckf.generatePublic(new ECPublicKeySpec(point, spec));
+        
+		return ecPublicKey;
+		} catch(Exception ex) {
+			return null;
+		}
+	}
+	
 	public ECPublicKey getECPublicKey() {
 		
-		java.security.spec.ECParameterSpec ecParameters= CryptoUtils.getECParameterSpec("secp256k1");
+		java.security.spec.ECParameterSpec ecParameters= CryptoUtils.getECParameterSpec(this.getKeyType().name());
 		ECPoint ecPoint = new ECPoint(new BigInteger(x,16), new BigInteger(y,16));
 		ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, ecParameters);
 		try {
@@ -235,14 +256,15 @@ public class PascPublicKey implements Serializable {
 	public static PascPublicKey fromEncodedPubKey(String bcPub)  {
 		com.github.davidbolet.jpascalcoin.common.model.PascPublicKey pk=new com.github.davidbolet.jpascalcoin.common.model.PascPublicKey();
 		String sx,sy;
-		if (bcPub==null || bcPub.length()!=140) throw new IllegalArgumentException("bcPub must be 140 charachters long");
-		if (!bcPub.startsWith(HexConversionsHelper.int2BigEndianHex(KeyType.SECP256K1.getValue())))
-			throw new IllegalArgumentException("Only SECP256K1 keys are supported");
-		sx=bcPub.substring(8,72);
-		sy=bcPub.substring(76);
+		//if (bcPub==null || bcPub.length()!=140) throw new IllegalArgumentException("bcPub must be 140 charachters long");
+		KeyType keyType=KeyType.fromValue(HexConversionsHelper.hexBigEndian2Int(bcPub.substring(0,4)));
+		int xSize=HexConversionsHelper.hexBigEndian2Int(bcPub.substring(4,8))*2;
+		sx=bcPub.substring(8,8+xSize);
+		//int ySize=HexConversionsHelper.hexBigEndian2Int(bcPub.substring(8+xSize,8+xSize+4));
+		sy=bcPub.substring(8+4+xSize); //Maybe in the future there will be something at the end, so maybe we should put limit the substring to commented ySize
 		pk.setX(sx);
 		pk.setY(sy);
-		pk.setKeyType(KeyType.SECP256K1);
+		pk.setKeyType(keyType);
 		//pk.setName(name);
 		pk.setEncPubKey(bcPub);
 		pk.setCanUse(true); //However, the wallet doesn't have the private key, as we only have it 
@@ -262,33 +284,13 @@ public class PascPublicKey implements Serializable {
 		return pk;
 	}
 
-	 /**
-     * Generates a PascPublicKey object from a given java.security.ECPublicKey object
-     * @param epub java.security.PublicKey to generate Pascalcoin public Key
-     * @return Pascalcoin public key object
-     * @throws NoSuchAlgorithmException if given key is different from SECP256K1
-     */
-    public static com.github.davidbolet.jpascalcoin.common.model.PascPublicKey fromECPublicKey(ECPublicKey epub) throws NoSuchAlgorithmException {
-        
-    	//ECPublicKey epub = (ECPublicKey)pub;
-		ECPoint pt = epub.getW();
-//		String sx1 = HexConversionsHelper.byteToHex(pt.getAffineX().toByteArray()).toUpperCase(); 
-//		String sy1 = HexConversionsHelper.byteToHex(pt.getAffineY().toByteArray()).toUpperCase();
-		String sx = adjustTo64(pt.getAffineX().toString(16)).toUpperCase();
-		String sy = adjustTo64(pt.getAffineY().toString(16)).toUpperCase();
-		//We must divide by 2 as charset is Unicode, while Pasc uses AnsiString 
-		String bcPub = HexConversionsHelper.int2BigEndianHex(KeyType.SECP256K1.getValue())+HexConversionsHelper.int2BigEndianHex(sx.length()/2) + sx + HexConversionsHelper.int2BigEndianHex(sy.length()/2)+sy;
-		com.github.davidbolet.jpascalcoin.common.model.PascPublicKey pk=fromEncodedPubKey( bcPub);
-        return pk;
-    }
     
     /**
      * Code to generate public key using bouncy castle
      * Derivates Public Key depending on the given KeyHelper object
      * @param privateKey PascPrivateKey to derivate
      * @param helper BouncyCastleKeyHelper for stabndard Java or SpongyCastleKeyHelper for android
-     * @return PublicKey
-     
+     * @return PublicKey     
     public static com.github.davidbolet.jpascalcoin.api.model.PublicKey fromPrivateKey(PascPrivateKey privateKey,KeyHelper helper) {
     	com.github.davidbolet.jpascalcoin.api.model.PublicKey result=null;
     	BigInteger s=new BigInteger(privateKey.getPrivateKey(), 16);
@@ -300,7 +302,7 @@ public class PascPublicKey implements Serializable {
     	}
     	return result;
     }
-*/    
+*/
   
     
     static private String adjustTo64(String s) {

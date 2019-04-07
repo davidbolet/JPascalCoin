@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Security;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -38,6 +39,7 @@ static Properties props = new Properties();
 		InputStream is = ClassLoader.getSystemResourceAsStream(path);
 		if (is==null) throw new Error("Could not find jPascalcoin-test.properties file");
 		props.load(is);
+		//props=new Properties();
 	}
 	
 	
@@ -51,7 +53,7 @@ static Properties props = new Properties();
 			Short.parseShort(props.getProperty("jPascalcoin.client.port", PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT.toString())),
 			getIntProperty(props, "jPascalcoin.client.logLevel", 1));
 
-		password=props.getProperty("jPascalcoin.wallet.password");
+		password=props.getProperty("jPascalcoin.wallet.password","L1L0kio10!");
 
 		privateKey1=props.getProperty("jPascalcoin.test.privateKey.mainNetwork1");
 		publicKey1=props.getProperty("jPascalcoin.test.publicKey.mainNetwork1");
@@ -60,6 +62,7 @@ static Properties props = new Properties();
 		privateKey2Encoded=props.getProperty("jPascalcoin.test.privateKey.mainNetwork2.encoded");
 		//Initially unlock wallet,
 		client.unlock(password);
+		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 	}
 	
 	
@@ -138,6 +141,65 @@ static Properties props = new Properties();
 		//Must fit
 		assertEquals(pk2.getEncPubKey(),key.getPublicKey().getEncPubKey());
 		assertEquals(pk2.getBase58PubKey(),key.getPublicKey().getBase58PubKey());
+	}
+	
+	@Test
+	public void generateSECT283K1Curve() throws Exception {
+		
+		String b58="2jR5AN5uRR6xyz34mGbh1a7WVPCW5DY3REDDsNpBh72WGtrmVRZ9AWbSLynaBGKtPhkbLs6hdV2eYFFsPkUPH3MzhoBJY5y4ZtSKQKWGZmJW5NWF5";
+		String encoded=client.decodePubKey(null,b58).getEncPubKey();
+		System.out.println("encPubKey: "+encoded);
+		//D9022400040F51F1ACC393BF56A5DC943022C526FDBA105847999948A8849E4ED424863F25C1CE1A24000678591F2E2984A15EF569E299E99DB8CB1BE327151DD01876B54D117A2B5C21C875DA4D
+		
+		PascPrivateKey key1 = PascPrivateKey.generate(KeyType.SECT283K1);
+		
+		String encPubKey1=key1.getPublicKey().getEncPubKey();
+		String base58PubKey1=key1.getPublicKey().getBase58PubKey();
+		
+		System.out.println("encPubKey: "+encPubKey1);
+		System.out.println("Base58PubKey: "+base58PubKey1);
+		
+		PascPublicKey pascPubKey1=client.decodePubKey(encPubKey1, null);
+		assertEquals(pascPubKey1.getBase58PubKey(),base58PubKey1);
+		
+		PascPublicKey pascPubKey11=client.decodePubKey(null, base58PubKey1);
+		assertEquals( encPubKey1,pascPubKey11.getEncPubKey());
+	}
+	
+	@Test
+	public void generateSECP384R1Curve() throws Exception {
+		
+		PascPrivateKey key1 = PascPrivateKey.generate(KeyType.SECP384R1);
+		
+		String encPubKey1=key1.getPublicKey().getEncPubKey();
+		String base58PubKey1=key1.getPublicKey().getBase58PubKey();
+		
+		System.out.println("encPubKey: "+encPubKey1);
+		System.out.println("Base58PubKey: "+base58PubKey1);
+		
+		PascPublicKey pascPubKey1=client.decodePubKey(encPubKey1, null);
+		assertEquals(pascPubKey1.getBase58PubKey(),base58PubKey1);
+		
+		PascPublicKey pascPubKey11=client.decodePubKey(null, base58PubKey1);
+		assertEquals( encPubKey1,pascPubKey11.getEncPubKey());
+	}
+	
+	@Test
+	public void generateSECP521R1Curve() throws Exception {
+		
+		PascPrivateKey key1 = PascPrivateKey.generate(KeyType.SECP521R1);
+		
+		String encPubKey1=key1.getPublicKey().getEncPubKey();
+		String base58PubKey1=key1.getPublicKey().getBase58PubKey();
+		
+		System.out.println("encPubKey: "+encPubKey1);
+		System.out.println("Base58PubKey: "+base58PubKey1);
+		
+		PascPublicKey pascPubKey1=client.decodePubKey(encPubKey1, null);
+		assertEquals(pascPubKey1.getBase58PubKey(),base58PubKey1);
+		
+		PascPublicKey pascPubKey11=client.decodePubKey(null, base58PubKey1);
+		assertEquals( encPubKey1,pascPubKey11.getEncPubKey());
 	}
 	
 	
