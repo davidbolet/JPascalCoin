@@ -55,7 +55,7 @@ public class EncryptionUtilsTest {
 	public void init() //"10.211.55.10"
 	{
 		//client = new PascalCoinClientImpl(props.getProperty("jPascalcoin.client.ip", "10.211.55.10"),
-		client = new PascalCoinClientImpl("10.211.55.7",
+		client = new PascalCoinClientImpl("10.211.55.10",
 			Short.parseShort(props.getProperty("jPascalcoin.client.port", PascalCoinConstants.DEFAULT_MAINNET_RPC_PORT.toString())),
 			getIntProperty(props, "jPascalcoin.client.logLevel", 1));
 
@@ -78,11 +78,14 @@ public class EncryptionUtilsTest {
 	
 	@Test
 	public void checkEciesDecryption() throws Exception {
-		PascPrivateKey pk=PascPrivateKey.fromPrivateKey(privateKey1, KeyType.SECP256K1);
-		
+		PascPrivateKey pk=PascPrivateKey.generate(KeyType.SECP256K1);
 		String b58PubKey=pk.getPublicKey().getBase58PubKey();
+		
+		PascPublicKey publicKey=client.decodePubKey(null, b58PubKey);
+		PascPublicKey key=PascPublicKey.fromB58PubKey(b58PubKey);
+		assertEquals(publicKey.getEncPubKey().toUpperCase(),key.getEncPubKey().toUpperCase());
 		System.out.println(textWithAccents.length());
-		//PascPublicKey publicKey=client.decodePubKey(null, b58PubKey);
+		
 		String enc1=client.payloadEncrypt(text, "pubkey", null, null, b58PubKey);
 		String enc2=client.payloadEncrypt(textSimpleASCII, "pubkey", null, null, b58PubKey);
 		String enc3=client.payloadEncrypt(textWithAccents, "pubkey", null, null, b58PubKey);
@@ -94,8 +97,8 @@ public class EncryptionUtilsTest {
 		String result2=new String(EncryptionUtils.doPascalcoinEciesDecrypt(pk,enc2));
 		assertEquals(result2,textSimpleASCII);
 		
-		String result33=client.payloadDecrypt(enc3, null).getUnencryptedPayload();
-		assertEquals(result33,textWithAccents);
+//		String result33=client.payloadDecrypt(enc3, null).getUnencryptedPayload();
+//		assertEquals(result33,textWithAccents);
 		String result3=new String(EncryptionUtils.doPascalcoinEciesDecrypt(pk,enc3));
 		assertEquals(result3,textWithAccents);
 		

@@ -284,6 +284,26 @@ public class PascPublicKey implements Serializable {
 		return pk;
 	}
 
+	public static PascPublicKey fromB58PubKey(String b58pub) {
+		com.github.davidbolet.jpascalcoin.common.model.PascPublicKey pk=null;
+		try {
+			pk=new com.github.davidbolet.jpascalcoin.common.model.PascPublicKey();
+			String base58PubKeyDec = HexConversionsHelper.byteToHex(Base58.decode(b58pub));
+			if (!base58PubKeyDec.startsWith(B58_PUBKEY_PREFIX))
+				throw new Exception("Not a valid B58 public key");
+			String bcPub=base58PubKeyDec.substring(B58_PUBKEY_PREFIX.length(),base58PubKeyDec.length()-8);
+			String shaIn=base58PubKeyDec.substring(base58PubKeyDec.length()-8).toUpperCase();
+
+			MessageDigest sha = MessageDigest.getInstance("SHA-256");
+			byte[] s1 = sha.digest(HexConversionsHelper.decodeStr2Hex(bcPub));
+			String shaTxt=HexConversionsHelper.byteToHex(s1).toUpperCase();
+			if (!shaTxt.startsWith(shaIn))
+				throw new Exception("Not a valid B58 public key");
+			pk=fromEncodedPubKey( bcPub); 
+		} catch(Exception ex) {
+		}
+		return pk;
+	}
     
     /**
      * Code to generate public key using bouncy castle
@@ -305,15 +325,15 @@ public class PascPublicKey implements Serializable {
 */
   
     
-    static private String adjustTo64(String s) {
-        switch(s.length()) {
-        case 62: return "00" + s;
-        case 63: return "0" + s;
-        case 64: return s;
-        default:
-            throw new IllegalArgumentException("not a valid key: " + s);
-        }
-    }
+//    static private String adjustTo64(String s) {
+//        switch(s.length()) {
+//        case 62: return "00" + s;
+//        case 63: return "0" + s;
+//        case 64: return s;
+//        default:
+//            throw new IllegalArgumentException("not a valid key: " + s);
+//        }
+//    }
 	
     
 	
